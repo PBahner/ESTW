@@ -3,7 +3,7 @@
 ESTW Estw;
 
 // Variablen
-char buffer[20];
+char buffer[20]; // Daten Array fuer die einkommenden Seriellen Daten
 int bufferCount;
 unsigned long previousMillis1 = 0;
 unsigned long previousMillis2 = 0;
