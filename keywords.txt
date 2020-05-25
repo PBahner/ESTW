@@ -1,0 +1,42 @@
+######################################
+# Klassennamen (KEYWORD1)
+######################################
+
+ESTW	KEYWORD1
+
+######################################
+# Methoden und Funktionen (KEYWORD2)
+######################################
+
+weicheSchalten	KEYWORD2
+weichenSchalten	KEYWORD2
+weichenPosSenden	KEYWORD2
+fahrstrasseVorhanden	KEYWORD2
+fahrwegSichern	KEYWORD2
+fahrwegFrei	KEYWORD2
+signalSchalten	KEYWORD2
+output	KEYWORD2
+input	KEYWORD2
+
+######################################
+# Konstanten
+######################################
+
+StartTag	LITERAL1
+EndTag	LITERAL1
+BelegtmeldungsTag	LITERAL1
+WeichenTag	LITERAL1
+UmschaltTag	LITERAL1
+FahrstrassenTag	LITERAL1
+AnfrageTag	LITERAL1
+AngenommenTag	LITERAL1
+AbgelehntTag	LITERAL1
+UnbesetztTag	LITERAL1
+
+datenIn	LITERAL1
+taktIn	LITERAL1
+pLoadIn	LITERAL1
+
+taktOut	LITERAL1
+speicherOut	LITERAL1
+datenOut	LITERAL1
