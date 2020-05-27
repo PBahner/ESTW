@@ -23,7 +23,7 @@ void setup() {
   //Daten ausgeben
   Estw.output();
 
-  Serial.begin(9600);
+  Serial.begin(9600); // Serielle Schnittstelle initialisieren
 }
 
 ////////////////////////////////////LOOP////////////////////////////////////
