@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Estw für MoBa</string>
+    <string name="title_activity_bluetoothscanner">Bluetooth Scanner</string>
+    <string name="title_activity_estw">Estw</string>
+
+    <string name="paired">Gekoppelte Geräte\n</string>
+    <string name="others">Geräte in Reichweite\n</string>
+    <string name="template">\t%1$s (%2$s)\n</string>
+    <string name="action_beenden">Beenden</string>
+    <string name="action_info">Informationen</string>
+
+    <string name="verbinden">verbinden</string>
+    <string name="trennen">trennnen</string>
+    <string name="w1">W1</string>
+    <string name="w2">W2</string>
+    <string name="w3">W3</string>
+    <string name="w4">W4</string>
+    <string name="wu">WU</string>
+    <string name="andere">Andere</string>
+    <string name="wus">WUS</string>
+    <string name="wue">WUE</string>
+</resources>
