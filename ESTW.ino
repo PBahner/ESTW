@@ -31,11 +31,7 @@ void loop() {
   for(int i=0; i<9; i++){
     //    Prüfen ob der Fahrweg (Gleise) frei ist
     if(Estw.einzustellendeFahrstrasse[i] == 1){
-      if(Estw.fahrwegFrei(i)){
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(UnbesetztTag));
-        Serial.print(buffer[3]); Serial.print(","); Serial.print(buffer[5]);
-        Serial.println();
-        
+      if(Estw.fahrwegFrei(i)){        
         Estw.fahrwegSichern(i);   //    Weichen stellen
         Estw.einzustellendeFahrstrasse[i] = 2;
       }
@@ -43,21 +39,38 @@ void loop() {
     //    Signal schalten
     if(Estw.einzustellendeFahrstrasse[i] == 2){
       if(Estw.fahrwegFrei(i)){    //    zusätzliche überprüfung ob die Gleise Frei sind
+        for(byte d=0; d<2; d++){
+        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(FestgelegtTag));
+        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
+        Serial.println();
+        }
+        
         Estw.signalSchalten(i, 1);
         Estw.verzoegerungGleisfrei[i] = millis();
         Estw.einzustellendeFahrstrasse[i] = 3;
       }
     }
-    //    nach der Verzögerung wird das 
+    //    nach der Verzögerung wird das Gleis geschalten
     if(Estw.einzustellendeFahrstrasse[i] == 3){
-     if(Estw.fahrwegFrei(i) and Estw.verzoegerungGleisfrei[i]+2000 <= millis()){
+      if(Estw.fahrwegFrei(i) and Estw.verzoegerungGleisfrei[i]+2000 <= millis()){
+        for(byte d=0; d<2; d++){
+        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(BefahrenTag));
+        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
+        Serial.println();
+        }
+        
         Estw.gleisSchalten(i, 1);
         Estw.verzoegerungGleisfrei[i] = 0;
         Estw.einzustellendeFahrstrasse[i] = 4;
       }
     }
     if(Estw.einzustellendeFahrstrasse[i] == 4){
-     if(!Estw.fahrwegFrei(i)){
+      if(!Estw.fahrwegFrei(i)){
+        for(byte d=0; d<2; d++){
+        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(ClearTag));
+        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
+        Serial.println();
+        }
         Estw.gleisSchalten(i, 0);
         Estw.signalSchalten(i, 0);
         Estw.einzustellendeFahrstrasse[i] = 0;
@@ -90,8 +103,8 @@ void serialEvent() {
   char ch = Serial.read();
   buffer[bufferCount] = ch;
   bufferCount++;
-  Serial.print(bufferCount);
-  Serial.println(buffer);
+  //Serial.print(bufferCount);
+  //Serial.println(buffer);
   if ((ch == EndTag) and (buffer[0] == StartTag)) { //Wird ein Serieller Code empfangen (S...E)
     bufferCount = 0;
 
@@ -110,14 +123,16 @@ void serialEvent() {
       //Serial.print(numFahrstrasse);
 
       // Wird die Fahrstraße angenommen ?
+      for(byte d=0; d<2; d++){
       if (numFahrstrasse == 100) { // nicht Vorhanden
         Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(AbgelehntTag));
       } else { // Fahrstraße angenommen
         Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(AngenommenTag));
-        Serial.print(buffer[3]); Serial.print(","); Serial.print(buffer[5]);
+        Serial.print(Estw.getFahrstrasse(numFahrstrasse, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(numFahrstrasse, 1));
         Serial.println();
   
         Estw.einzustellendeFahrstrasse[numFahrstrasse] = 1;
+      }
       }
     }
     // empfangene Daten zurücksetzen

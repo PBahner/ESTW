@@ -14,10 +14,13 @@
 #define WeichenTag 87 // W
 #define UmschaltTag 85 // U
 #define FahrstrassenTag 70 // F
+#define FestgelegtTag 70 // F
 #define AnfrageTag 82 // R (für request)
 #define AngenommenTag 65 // A (für accepted)
 #define AbgelehntTag 78 // N (für not accepted)
 #define UnbesetztTag 85 // U
+#define ClearTag 67 // C
+#define BefahrenTag 85 // U
 
 
 #define datenIn 11
@@ -37,6 +40,7 @@ class ESTW{
     void weichenSchalten();
     void weichenPosSenden();
     int fahrstrasseVorhanden(char[20]);
+    char getFahrstrasse(int, boolean);
     void fahrwegSichern(int);
     boolean fahrwegFrei(int);
     void signalSchalten(int, boolean);

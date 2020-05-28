@@ -47,6 +47,10 @@ int ESTW::fahrstrasseVorhanden(char buffer[20]){
   }
 }
 
+char ESTW::getFahrstrasse(int fahrstrasse, boolean index){
+  return char(fahrstrassen[fahrstrasse][index]);
+}
+
 boolean ESTW::fahrwegFrei(int fahrstrasse){
   for(int i=9; i<15; i++){
     //      wird dieses Gleis gebraucht            und       ist es Frei?
