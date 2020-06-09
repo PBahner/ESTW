@@ -90,8 +90,7 @@ void loop() {
     Estw.output();
   
     Estw.weichenPosSenden();
-  
-    Serial.println();
+    Estw.fahrstrassenPosSenden();
   }
 
   Estw.KS1.updateSignalbild();

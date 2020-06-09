@@ -39,6 +39,7 @@ class ESTW{
     void weicheSchalten(int, int);
     void weichenSchalten();
     void weichenPosSenden();
+    void fahrstrassenPosSenden();
     int fahrstrasseVorhanden(char[20]);
     char getFahrstrasse(int, boolean);
     void fahrwegSichern(int);
