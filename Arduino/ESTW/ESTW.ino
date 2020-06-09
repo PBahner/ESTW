@@ -28,7 +28,7 @@ void setup() {
 
 ////////////////////////////////////LOOP////////////////////////////////////
 void loop() {
-  for(int i=0; i<9; i++){
+  for(int i=0; i<sizeof(Estw.einzustellendeFahrstrasse); i++){
     //    Prüfen ob der Fahrweg (Gleise) frei ist
     if(Estw.einzustellendeFahrstrasse[i] == 1){
       if(Estw.fahrwegFrei(i)){        
@@ -38,13 +38,7 @@ void loop() {
     }
     //    Signal schalten
     if(Estw.einzustellendeFahrstrasse[i] == 2){
-      if(Estw.fahrwegFrei(i)){    //    zusätzliche überprüfung ob die Gleise Frei sind
-        for(byte d=0; d<2; d++){
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(FestgelegtTag));
-        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
-        Serial.println();
-        }
-        
+      if(Estw.fahrwegFrei(i)){    //    zusätzliche überprüfung ob die Gleise Frei sind   
         Estw.signalSchalten(i, 1);
         Estw.verzoegerungGleisfrei[i] = millis();
         Estw.einzustellendeFahrstrasse[i] = 3;
@@ -53,12 +47,6 @@ void loop() {
     //    nach der Verzögerung wird das Gleis geschalten
     if(Estw.einzustellendeFahrstrasse[i] == 3){
       if(Estw.fahrwegFrei(i) and Estw.verzoegerungGleisfrei[i]+2000 <= millis()){
-        for(byte d=0; d<2; d++){
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(BefahrenTag));
-        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
-        Serial.println();
-        }
-        
         Estw.gleisSchalten(i, 1);
         Estw.verzoegerungGleisfrei[i] = 0;
         Estw.einzustellendeFahrstrasse[i] = 4;
@@ -66,11 +54,6 @@ void loop() {
     }
     if(Estw.einzustellendeFahrstrasse[i] == 4){
       if(!Estw.fahrwegFrei(i)){
-        for(byte d=0; d<2; d++){
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(ClearTag));
-        Serial.print(Estw.getFahrstrasse(i, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(i, 1));
-        Serial.println();
-        }
         Estw.gleisSchalten(i, 0);
         Estw.signalSchalten(i, 0);
         Estw.einzustellendeFahrstrasse[i] = 0;
