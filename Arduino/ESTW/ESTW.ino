@@ -122,17 +122,9 @@ void serialEvent() {
       //Serial.print(numFahrstrasse);
 
       // Wird die Fahrstraße angenommen ?
-      for(byte d=0; d<2; d++){
-      if (numFahrstrasse == 100) { // nicht Vorhanden
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(AbgelehntTag));
-      } else { // Fahrstraße angenommen
-        Serial.print(char(StartTag)); Serial.print(char(FahrstrassenTag)); Serial.print(char(AngenommenTag));
-        Serial.print(Estw.getFahrstrasse(numFahrstrasse, 0)); Serial.print(","); Serial.print(Estw.getFahrstrasse(numFahrstrasse, 1));
-        Serial.println();
-  
+      if (numFahrstrasse != 100) { // Fahrstrasse muss Vorhanden sein
         Estw.einzustellendeFahrstrasse[numFahrstrasse] = 1;
-      }
-      }
+      } 
     }
     // empfangene Daten zurücksetzen
     for (int i = 0; i < 19; i++) {
