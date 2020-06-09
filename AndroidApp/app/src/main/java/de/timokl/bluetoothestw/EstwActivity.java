@@ -296,60 +296,6 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                 }
                             }
                         }
-
-                        /*if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 65){ //Fahrstraße angenommen
-                            Log.d(LOG_TAG, "FA gefunden"); //man soll z.B.: "SFAb,c" bekommen
-                            //Toast.makeText(EstwActivity.this, "Angenommen", Toast.LENGTH_LONG).show();
-
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                Log.d(LOG_TAG,"Einzustellende Fahrstrasse " + canvas.fahrstrassen[fahrstrasse][0] + (char)buffer[i+3] + "  " + canvas.fahrstrassen[fahrstrasse][1] + (char)buffer[i+5]+ " " + fahrstrasse);
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 1;
-                                    break;
-                                }
-                            }
-                        } else if((char) buffer[i+1] == 70 && (char) buffer[i+2] == 78){ //Fahrstraße abgelehnt
-                            Log.d(LOG_TAG, "FN gefunden"); //man soll z.B.: "SFNb,c" bekommen
-                            //Toast.makeText(this, "Abgewiesen", Toast.LENGTH_LONG).show();
-                        }else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 70){ //Fahrstraße festgelegt
-                            Log.d(LOG_TAG, "FF gefunden"); //man soll z.B.: "SFFb,c" bekommen
-                            //Toast.makeText(this, "Festgelegt", Toast.LENGTH_LONG).show();
-
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;
-                                    for(int signal=0; signal<5; signal++){
-                                    if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                        canvas.Signale[signal] = 2;
-                                        break;
-                                    }
-                                    }
-                                    break;
-                                }
-                            }
-                        } else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 85){ //Fahrstraße in benutzung / wird befahren
-                            Log.d(LOG_TAG, "FU gefunden"); //man soll z.B.: "SUFb,c" bekommen
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
-                                    for(int signal=0; signal<5; signal++){
-                                        if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                            canvas.Signale[signal] = 0;
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        } else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 67){ //Fahrstraße wieder Freigegeben
-                            Log.d(LOG_TAG, "FC gefunden"); //man soll z.B.: "SFCb,c" bekommen
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]) {
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
-                                    break;
-                                }
-                            }
-                        }*/
                     }
 
                     // Message zusammensetzen:
