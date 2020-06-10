@@ -54,6 +54,7 @@ class ESTW{
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);
     unsigned long verzoegerungGleisfrei[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned long verzoegerungSignalhalt[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     
   private:
     boolean weichenSoll[4] = {0, 0, 0, 0}; // gewünschte Weichenposition

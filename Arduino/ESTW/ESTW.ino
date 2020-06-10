@@ -49,13 +49,15 @@ void loop() {
       if(Estw.fahrwegFrei(i) and Estw.verzoegerungGleisfrei[i]+2000 <= millis()){
         Estw.gleisSchalten(i, 1);
         Estw.verzoegerungGleisfrei[i] = 0;
+        Estw.verzoegerungSignalhalt[i] = millis();
         Estw.einzustellendeFahrstrasse[i] = 4;
       }
     }
-    if(Estw.einzustellendeFahrstrasse[i] == 4){
+    if(Estw.einzustellendeFahrstrasse[i] == 4 and Estw.verzoegerungSignalhalt[i]+2000 <= millis()){
       if(!Estw.fahrwegFrei(i)){
         Estw.gleisSchalten(i, 0);
         Estw.signalSchalten(i, 0);
+        Estw.verzoegerungSignalhalt[i] = 0;
         Estw.einzustellendeFahrstrasse[i] = 0;
       }
     }

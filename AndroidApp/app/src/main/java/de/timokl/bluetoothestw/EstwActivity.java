@@ -286,6 +286,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                         }
                                         break;
                                     case 51:
+                                    case 52:
                                         canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
                                         for(int signal=0; signal<5; signal++){
                                             if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
@@ -293,21 +294,15 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                             }
                                         }
                                         break;
-                                    case 52:
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;                 // Fahrstrasse wird befahren
+                                    // Fahrstrasse wird befahren
+                                    // Signal auf rot stellen
+                                    default:
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
                                         for(int signal=0; signal<5; signal++){
                                             if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
                                                 canvas.Signale[signal] = 0; break;      // Signal auf rot stellen
                                             }
                                         }
-                                        break;
-                                    default:
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
-                                        /*for(int signal=0; signal<5; signal++){
-                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 0; break;      // Signal auf rot stellen
-                                            }
-                                        }*/
                                         break;     // Fahrstrasse nicht eingestellt
                                 }
                             }
