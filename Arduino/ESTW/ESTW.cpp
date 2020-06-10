@@ -25,9 +25,18 @@ void ESTW::weichenSchalten(){
 void ESTW::weichenPosSenden(){
   //Weichenposition an App senden
   Serial.print("SWP");
-  for(int i=0; i<4; i++){
+  for(int i=0; i<sizeof(weichen); i++){
     Serial.print(weichen[i]);
   }
+  Serial.println("\n");
+}
+
+void ESTW::fahrstrassenPosSenden(){
+  Serial.print("SFP");
+  for(int i=0; i<sizeof(einzustellendeFahrstrasse); i++){
+    Serial.print(einzustellendeFahrstrasse[i]);
+  }
+  Serial.println("\n");
 }
 
 int ESTW::fahrstrasseVorhanden(char buffer[20]){

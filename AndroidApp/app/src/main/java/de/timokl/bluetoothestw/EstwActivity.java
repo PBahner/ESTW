@@ -270,56 +270,45 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                             weicheSchalten(i + 2);
 
                         }
-                        if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 65){ //Fahrstraße angenommen
-                            Log.d(LOG_TAG, "FA gefunden"); //man soll z.B.: "SFAb,c" bekommen
-                            //Toast.makeText(EstwActivity.this, "Angenommen", Toast.LENGTH_LONG).show();
 
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                Log.d(LOG_TAG,"Einzustellende Fahrstrasse " + canvas.fahrstrassen[fahrstrasse][0] + (char)buffer[i+3] + "  " + canvas.fahrstrassen[fahrstrasse][1] + (char)buffer[i+5]+ " " + fahrstrasse);
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 1;
-                                    break;
-                                }
-                            }
-                        } else if((char) buffer[i+1] == 70 && (char) buffer[i+2] == 78){ //Fahrstraße abgelehnt
-                            Log.d(LOG_TAG, "FN gefunden"); //man soll z.B.: "SFNb,c" bekommen
-                            //Toast.makeText(this, "Abgewiesen", Toast.LENGTH_LONG).show();
-                        }else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 70){ //Fahrstraße festgelegt
-                            Log.d(LOG_TAG, "FF gefunden"); //man soll z.B.: "SFFb,c" bekommen
-                            //Toast.makeText(this, "Festgelegt", Toast.LENGTH_LONG).show();
-
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;
-                                    for(int signal=0; signal<5; signal++){
-                                    if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                        canvas.Signale[signal] = 2;
-                                        break;
-                                    }
-                                    }
-                                    break;
-                                }
-                            }
-                        } else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 85){ //Fahrstraße in benutzung / wird befahren
-                            Log.d(LOG_TAG, "FU gefunden"); //man soll z.B.: "SUFb,c" bekommen
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]){
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
-                                    for(int signal=0; signal<5; signal++){
-                                        if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                            canvas.Signale[signal] = 0;
-                                            break;
+                        if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 80){ //Fahrstrassen Status
+                            Log.d(LOG_TAG, "FP gefunden"); //man soll z.B.: "SFP000000000" bekommen
+                            for(int fahrstrasse=0; fahrstrasse<canvas.fahrstrassen.length; fahrstrasse++){
+                                Log.d(LOG_TAG, "Fahrstrasse: " + (i + 3 + fahrstrasse) + "\t" + (char) (buffer[i+3+fahrstrasse]));
+                                switch ((char) buffer[i+3+fahrstrasse]){
+                                    case 49: canvas.einzustellendeFahrstrassen[fahrstrasse] = 1; Log.d(LOG_TAG, "Die" + fahrstrasse); break;    // Fahrstrasse angefragt/wird eingestellt
+                                    case 50:
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;                 // Fahrstrasse festegelegt
+                                        for(int signal=0; signal<5; signal++){
+                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
+                                                canvas.Signale[signal] = 2; break;      // Signal auf grün stellen
+                                            }
                                         }
-                                    }
-                                    break;
-                                }
-                            }
-                        } else if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 67){ //Fahrstraße wieder Freigegeben
-                            Log.d(LOG_TAG, "FC gefunden"); //man soll z.B.: "SFCb,c" bekommen
-                            for(int fahrstrasse=0; fahrstrasse<9; fahrstrasse++){
-                                if(canvas.fahrstrassen[fahrstrasse][0] == (char)buffer[i+3] && canvas.fahrstrassen[fahrstrasse][1] == (char)buffer[i+5]) {
-                                    canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
-                                    break;
+                                        break;
+                                    case 51:
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
+                                        for(int signal=0; signal<5; signal++){
+                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
+                                                canvas.Signale[signal] = 2; break;      // Signal auf grün stellen
+                                            }
+                                        }
+                                        break;
+                                    case 52:
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;                 // Fahrstrasse wird befahren
+                                        for(int signal=0; signal<5; signal++){
+                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
+                                                canvas.Signale[signal] = 0; break;      // Signal auf rot stellen
+                                            }
+                                        }
+                                        break;
+                                    default:
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
+                                        /*for(int signal=0; signal<5; signal++){
+                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
+                                                canvas.Signale[signal] = 0; break;      // Signal auf rot stellen
+                                            }
+                                        }*/
+                                        break;     // Fahrstrasse nicht eingestellt
                                 }
                             }
                         }
@@ -391,7 +380,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
             while (!isFinishing()){
                 empfangen();
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
