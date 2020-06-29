@@ -3,30 +3,26 @@
 #include <Wire.h>
 #define MASTER_ADR 2
 
-union data_u{
+union i2c_data{
   struct{
-    int value1;
-    int value2;
-    int value3;
-    int value4;
-    int value5;
+    int valueSignal1;
+    int valueSignal2;
   };
-  byte bytes[10];
+  byte bytes[2];
 };
 
-data_u data;
+i2c_data data;
 
+////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
   Wire.begin(MASTER_ADR);
-  data.value1 = 1;
-  data.value2 = 4;
-  data.value3 = 12;
-  data.value4 = 30000;
-  data.value5 = -10000;
+  data.valueSignal1 = 1;
+  data.valueSignal2 = 0;
 
   Wire.onRequest(requestEvent);
 }
 
+////////////////////////////////////LOOP////////////////////////////////////
 void loop() {}
 
 void requestEvent(){
