@@ -14,12 +14,14 @@ union i2c_data{
 i2c_data data;
 unsigned long millis_before = 0;
 
-FormSignal FSignal1 = FormSignal(4);
-FormSignal FSignal2 = FormSignal(5);
+FormSignal FSignal1;
+FormSignal FSignal2;
 
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
   Serial.begin(9600);
+  FSignal1.begin(2);
+  FSignal2.begin(3);
   //Wire.begin(SLAVE_ADR);
 }
 

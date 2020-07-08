@@ -6,7 +6,7 @@
 
 class FormSignal{
   public:
-    FormSignal(int);
+    void begin(int);
     void setSignal(boolean);
   private:
     int steps = 80;

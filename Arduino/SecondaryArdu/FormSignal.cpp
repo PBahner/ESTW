@@ -1,6 +1,6 @@
 #include "FormSignal.h"
 
-FormSignal::FormSignal(int pin){
+void FormSignal::begin(int pin){
   servoPin = pin;
   signalServo.attach(servoPin);
   Serial.print("attaching Servo on pin: ");
