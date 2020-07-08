@@ -91,6 +91,11 @@ void ESTW::fahrwegSichern(int fahrstrasse){
 void ESTW::signalSchalten(int fahrstrasse, boolean pos){
   for(int i=0; i<5; i++){
     if((fahrstrassenVerschluss[fahrstrasse][i] == 1) and (pos == 1)){
+      if(fahrstrasse == 0){
+        i2c_data.valueSignal1 = 1;
+      }else if(fahrstrasse == 1){
+        i2c_data.valueSignal2 = 1;
+      }
       if(fahrstrasse == 3){
         KS1.setSignalbild(2);
       }else if(fahrstrasse == 4 or (fahrstrasse == 5 and einzustellendeFahrstrasse[0] != 4)){
@@ -106,6 +111,12 @@ void ESTW::signalSchalten(int fahrstrasse, boolean pos){
         KS2.setSignalbild(5);
       }
     }else if((fahrstrassenVerschluss[fahrstrasse][i] == 1) and (pos == 0)){
+      if(fahrstrassenVerschluss[fahrstrasse][0] == 1){
+        i2c_data.valueSignal1 = 0;
+      }
+      if(fahrstrassenVerschluss[fahrstrasse][1] == 1){
+        i2c_data.valueSignal2 = 0;
+      }
       if(fahrstrassenVerschluss[fahrstrasse][3] == 1){
         KS1.setSignalbild(1);
       }

@@ -6,11 +6,11 @@
 
 class FormSignal{
   public:
-    FormSignal(int);
+    void begin(int);
     void setSignal(boolean);
   private:
     int steps = 80;
-    int servoSpeed = 10;
+    int servoSpeed = 6;
     boolean pos = 0;
     int servoPin;
     Servo signalServo;

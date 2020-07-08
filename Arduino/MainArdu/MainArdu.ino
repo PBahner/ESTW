@@ -1,5 +1,6 @@
 #include "ESTW.h"
 #include "KsSignal.h"
+#include <Wire.h>
 ESTW Estw;
 
 // Variablen
@@ -22,6 +23,10 @@ void setup() {
 
   //Daten ausgeben
   Estw.output();
+
+  // I2C
+  Wire.begin(2); // I2C Adresse 2
+  Wire.onRequest(i2cRequestEvent);
 
   Serial.begin(9600); // Serielle Schnittstelle initialisieren
 }
@@ -116,4 +121,9 @@ void serialEvent() {
       buffer[i] = '.';
     }
   }
+}
+
+void i2cRequestEvent(){
+  Wire.write(Estw.i2c_data.bytes, sizeof(Estw.i2c_data));
+  Serial.println("Request!!");
 }

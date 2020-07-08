@@ -32,6 +32,16 @@
 #define datenOut 10
 
 
+// I2C Daten
+union i2c_struct{
+  struct{
+    byte valueSignal1 = 0;
+    byte valueSignal2 = 0;
+  };
+  byte bytes[2];
+};
+
+
 class ESTW{
   public:
     ESTW ();
@@ -55,6 +65,7 @@ class ESTW{
     KsSignal KS2 = KsSignal(14, 15, 16, 17);
     unsigned long verzoegerungGleisfrei[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     unsigned long verzoegerungSignalhalt[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    i2c_struct i2c_data;
     
   private:
     boolean weichenSoll[4] = {0, 0, 0, 0}; // gewünschte Weichenposition
