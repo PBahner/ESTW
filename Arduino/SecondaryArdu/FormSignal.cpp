@@ -3,6 +3,7 @@
 void FormSignal::begin(int pin){
   servoPin = pin;
   signalServo.attach(servoPin);
+  signalServo.write(0);
   Serial.print("attaching Servo on pin: ");
   Serial.println(servoPin);
 }

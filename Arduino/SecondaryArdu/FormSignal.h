@@ -10,8 +10,8 @@ class FormSignal{
     void setSignal(boolean);
   private:
     int steps = 80;
-    int servoSpeed = 8;
-    boolean pos = 1;
+    int servoSpeed = 6;
+    boolean pos = 0;
     int servoPin;
     Servo signalServo;
     void openSignal();

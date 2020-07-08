@@ -9,16 +9,6 @@ int bufferCount;
 unsigned long previousMillis1 = 0;
 unsigned long previousMillis2 = 0;
 
-// I2C Daten
-union i2c_struct{
-  struct{
-    int valueSignal1 = 0;
-    int valueSignal2 = 0;
-  };
-  byte bytes[2];
-};
-i2c_struct i2c_data;
-
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
   //Pins für Schieberegister-IN
@@ -35,7 +25,7 @@ void setup() {
   Estw.output();
 
   // I2C
-  Wire.begin(2);
+  Wire.begin(2); // I2C Adresse 2
   Wire.onRequest(i2cRequestEvent);
 
   Serial.begin(9600); // Serielle Schnittstelle initialisieren
@@ -134,5 +124,6 @@ void serialEvent() {
 }
 
 void i2cRequestEvent(){
-  Wire.write(i2c_data.bytes, sizeof(i2c_data));
+  Wire.write(Estw.i2c_data.bytes, sizeof(Estw.i2c_data));
+  Serial.println("Request!!");
 }
