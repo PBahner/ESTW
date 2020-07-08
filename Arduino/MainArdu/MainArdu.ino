@@ -1,5 +1,6 @@
 #include "ESTW.h"
 #include "KsSignal.h"
+#include <Wire.h>
 ESTW Estw;
 
 // Variablen
@@ -7,6 +8,16 @@ char buffer[20]; // Daten Array fuer die einkommenden Seriellen Daten
 int bufferCount;
 unsigned long previousMillis1 = 0;
 unsigned long previousMillis2 = 0;
+
+// I2C Daten
+union i2c_struct{
+  struct{
+    int valueSignal1 = 0;
+    int valueSignal2 = 0;
+  };
+  byte bytes[2];
+};
+i2c_struct i2c_data;
 
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
@@ -22,6 +33,10 @@ void setup() {
 
   //Daten ausgeben
   Estw.output();
+
+  // I2C
+  Wire.begin(2);
+  Wire.onRequest(i2cRequestEvent);
 
   Serial.begin(9600); // Serielle Schnittstelle initialisieren
 }
@@ -116,4 +131,8 @@ void serialEvent() {
       buffer[i] = '.';
     }
   }
+}
+
+void i2cRequestEvent(){
+  Wire.write(i2c_data.bytes, sizeof(i2c_data));
 }
