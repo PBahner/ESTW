@@ -17,6 +17,7 @@ public class MyCanvas extends View {
     private static int green = Color.rgb(0, 190, 0);
     private static int yellow = Color.YELLOW;
     private static int red = Color.RED;
+    private static int white = Color.WHITE;
 
     Paint paint;
     Paint.FontMetrics fm;
@@ -33,11 +34,13 @@ public class MyCanvas extends View {
     int [] Signale = {0, 0, 0, 0, 0};
     boolean [] SigAuswahl = {false, false, false, false, false, false};
     int [][] SigRects;
-    int [] einzustellendeFahrstrassen = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int [] einzustellendeFahrstrassen = {0, 0, 0, 0, 0, 0, 0, 0, 0};  // 1=wird eingestellt, 2=festgelegt, 3=in verwendung
     char [][] fahrstrassen =   {{'a', 'c'}, {'b', 'c'},              // Ausfahrten aus Bahnhof
                                 {'c', 'd'},                          // Signal C (Berg)
                                 {'d', 'n'}, {'d', 'e'}, {'d', 'a'},  // Signal D
                                 {'e', 'n'}, {'e', 'e'}, {'e', 'a'}}; // Signal E (Innenkreis)
+
+    // 2=gerade, 1=abzweigend, 0=nicht gebraucht
     //                                    Signale    Weichen  Belegtmeldung/Gleis
     int [][] fahrstrassenVerschluss =  {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
                                         {0,1,0,0,0,  1,0,0,0,  0,0,1,0,0,0}, // BC
@@ -280,22 +283,22 @@ public class MyCanvas extends View {
         //Weiche "1"
         if (Weichen[0]){
             //abzweigend
-            paint.setColor(Color.WHITE);
+            SwitchColor(1, 1);
             canvas.drawLine(pos("x", 80), pos("y", 70), pos("x", 83), pos("y", 70), paint);
-            paint.setColor(yellow);
+            SwitchColor(1, 2);
             canvas.drawLine(pos("x", 80), pos("y", 80), pos("x", 83), pos("y", 80), paint);
             canvas.drawLine(pos("x", 83), pos("y", 80), pos("x", 88), pos("y", 70), paint);
         } else {
             //gerade
-            paint.setColor(yellow);
+            SwitchColor(1, 1);
             canvas.drawLine(pos("x", 80), pos("y", 70), pos("x", 86), pos("y", 70), paint);
-            paint.setColor(Color.WHITE);
+            SwitchColor(1, 2);
             canvas.drawLine(pos("x", 80), pos("y", 80), pos("x", 83), pos("y", 80), paint);
             canvas.drawLine(pos("x", 83), pos("y", 80), pos("x", 88), pos("y", 70), paint);
         }
 
         //Spitze
-        paint.setColor(Color.WHITE);
+        SwitchColor(1, 0);
         canvas.drawLine(pos("x", 87), pos("y", 70), pos("x", 89), pos("y", 70), paint);
 
 
@@ -316,20 +319,20 @@ public class MyCanvas extends View {
         //Weiche "2"
         if (Weichen[1]){
             //abzweigend
-            paint.setColor(Color.WHITE);
+            SwitchColor(2, 1);
             canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 47), pos("y", 70), paint);
-            paint.setColor(yellow);
+            SwitchColor(2, 2);
             canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 42), pos("y", 70), paint);
         } else {
             //gerade
-            paint.setColor(yellow);
+            SwitchColor(2, 1);
             canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 44), pos("y", 70), paint);
-            paint.setColor(Color.WHITE);
+            SwitchColor(2, 2);
             canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 42), pos("y", 70), paint);
         }
 
         //Spitze
-        paint.setColor(Color.WHITE);
+        SwitchColor(2, 0);
         canvas.drawLine(pos("x", 41), pos("y", 70), pos("x", 43), pos("y", 70), paint);
 
 
@@ -350,20 +353,20 @@ public class MyCanvas extends View {
         //Weiche "3"
         if (Weichen[2]){
             //abzweigend
-            paint.setColor(Color.WHITE);
+            SwitchColor(3, 1);
             canvas.drawLine(pos("x", 50), pos("y", 20), pos("x", 47), pos("y", 20), paint);
-            paint.setColor(yellow);
+            SwitchColor(3, 2);
             canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 42), pos("y", 20), paint);
         } else {
             //gerade
-            paint.setColor(yellow);
+            SwitchColor(3, 1);
             canvas.drawLine(pos("x", 50), pos("y", 20), pos("x", 44), pos("y", 20), paint);
-            paint.setColor(Color.WHITE);
+            SwitchColor(3, 2);
             canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 42), pos("y", 20), paint);
         }
 
         //Spitze
-        paint.setColor(Color.WHITE);
+        SwitchColor(3, 0);
         canvas.drawLine(pos("x", 41), pos("y", 20), pos("x", 43), pos("y", 20), paint);
 
 
@@ -384,20 +387,20 @@ public class MyCanvas extends View {
         //Weiche "4"
         if (Weichen[3]){
             //abzweigend
-            paint.setColor(Color.WHITE);
+            SwitchColor(4, 1);
             canvas.drawLine(pos("x", 10), pos("y", 20), pos("x", 13), pos("y", 20), paint);
-            paint.setColor(yellow);
+            SwitchColor(4, 2);
             canvas.drawLine(pos("x", 15), pos("y", 26), pos("x", 18), pos("y", 20), paint);
         } else {
             //gerade
-            paint.setColor(yellow);
+            SwitchColor(4, 1);
             canvas.drawLine(pos("x", 10), pos("y", 20), pos("x", 16), pos("y", 20), paint);
-            paint.setColor(Color.WHITE);
+            SwitchColor(4, 2);
             canvas.drawLine(pos("x", 15), pos("y", 26), pos("x", 18), pos("y", 20), paint);
         }
 
         //Spitze
-        paint.setColor(Color.WHITE);
+        SwitchColor(4, 0);
         canvas.drawLine(pos("x", 17), pos("y", 20), pos("x", 19), pos("y", 20), paint);
 
 
@@ -637,6 +640,41 @@ public class MyCanvas extends View {
             paint.setColor(yellow);
         } else if (Signale[sig] == 2) {
             paint.setColor(green);
+        }
+    }
+
+    public void SwitchColor(int sw, int p){
+        if (p == 0){   // Farbe für Weichenspitze
+            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
+                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && (fahrstrassenVerschluss[fahrstrasse][4+sw] == 1 || fahrstrassenVerschluss[fahrstrasse][4 + sw] == 2)) {
+                    paint.setColor(green);
+                    break;
+                } else {
+                    paint.setColor(white);
+                }
+            }
+        } else if (p == 1){ // Farbe für Weiche gerade
+            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
+                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && fahrstrassenVerschluss[fahrstrasse][4+sw] == 2){
+                    paint.setColor(green);
+                    break;
+                } else if (!Weichen[sw-1]){
+                    paint.setColor(yellow);
+                } else {
+                    paint.setColor(white);
+                }
+            }
+        } else if (p == 2){ // Farbe für Weiche abzweigend
+            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
+                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && fahrstrassenVerschluss[fahrstrasse][4+sw] == 1){
+                    paint.setColor(green);
+                    break;
+                } else if (Weichen[sw-1]){
+                    paint.setColor(yellow);
+                } else {
+                    paint.setColor(white);
+                }
+            }
         }
     }
 
