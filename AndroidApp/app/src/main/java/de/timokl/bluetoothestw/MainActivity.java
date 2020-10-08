@@ -176,6 +176,7 @@ public class MainActivity extends Activity {
 
     private void showDevices() {
         StringBuilder sb = new StringBuilder();
+        Log.d(LOG_TAG, "show devices");
         if (started) {
             adapter.cancelDiscovery();
         }
@@ -183,6 +184,7 @@ public class MainActivity extends Activity {
         if (started) {
             sb.append(getString(R.string.others));
         }
+        Log.d(LOG_TAG, "STRING Builder" + String.valueOf(sb));
     }
 
     public void verbinden() {
