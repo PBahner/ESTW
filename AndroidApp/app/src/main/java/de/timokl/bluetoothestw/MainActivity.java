@@ -10,8 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
@@ -38,21 +40,29 @@ public class MainActivity extends Activity {
     private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private static final int REQUEST_ENABLE_BT = 123;
-    private static final int REQUEST_ACCESS_COARSE_LOCATION
-            = 321;
+    private static final int REQUEST_ACCESS_COARSE_LOCATION = 321;
 
     private BluetoothAdapter adapter;
     private boolean started;
 
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
+            boolean added = false;
             String action = intent.getAction();
-            if (ACTION_FOUND.equals(action)) {
-                BluetoothDevice device =
-                        intent.getParcelableExtra(EXTRA_DEVICE);
-                listAdapter.add(getString(R.string.template,
-                        device.getName(),
-                        device.getAddress()));
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                for(int i=0; i<listAdapter.getCount(); i++){
+                    Log.d(LOG_TAG, "|"+listAdapter.getItem(i) +"|"+ getString(R.string.template, device.getName(), device.getAddress())+"|");
+                    if(listAdapter.getItem(i).equals(getString(R.string.template, device.getName(), device.getAddress()))){
+                        added = true;
+                    }
+                }
+                if(!added){
+                    listAdapter.add(getString(R.string.template,
+                            device.getName(),
+                            device.getAddress()));
+                }
             }
         }
     };
@@ -62,10 +72,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ListView lv = findViewById(R.id.lv);
-        IntentFilter filter = new IntentFilter(ACTION_FOUND);
-        registerReceiver(receiver, filter);
-        listAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1);
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        this.registerReceiver(myReceiver, filter);
+        listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         scanResults = new HashMap<>();
 
         lv.setAdapter(listAdapter);
@@ -90,9 +99,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
+        unregisterReceiver(myReceiver);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onStart() {
         super.onStart();
@@ -102,33 +112,30 @@ public class MainActivity extends Activity {
         started = false;
 
 
-        if (ContextCompat.checkSelfPermission (this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-        != PackageManager.PERMISSION_GRANTED) {
+        /*if (ContextCompat.checkSelfPermission (this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            if (!ActivityCompat.shouldShowRequestPermissionRationale (this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                        ActivityCompat.requestPermissions (this,
-                                new String [] {Manifest.permission.READ_CONTACTS}, REQUEST_ACCESS_COARSE_LOCATION);
-                    }
+            Log.d(LOG_TAG, "du brauchst mehr berechtigungen!");
 
-        } else {
-            if (isBluetoothEnabled()) {
-                showDevices();
+            if (!ActivityCompat.shouldShowRequestPermissionRationale (this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                ActivityCompat.requestPermissions (this, new String [] {Manifest.permission.READ_CONTACTS}, REQUEST_ACCESS_COARSE_LOCATION);
             }
-        }
 
-        /*if (checkSelfPermission(
-                Manifest.permission.ACCESS_COARSE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]
-                            {Manifest.permission.ACCESS_COARSE_LOCATION},
-                    REQUEST_ACCESS_COARSE_LOCATION);
         } else {
             if (isBluetoothEnabled()) {
                 showDevices();
             }
         }*/
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(LOG_TAG, "du brauchst mehr berechtigungen!");
+            requestPermissions(new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
+
+        } else {
+            Log.d(LOG_TAG, "du hast genug berechtigungen! Suche nach Geräten.");
+            if (isBluetoothEnabled()) {
+                showDevices();
+            }
+        }
     }
 
     @Override
@@ -142,7 +149,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
+                                           @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if ((requestCode == REQUEST_ACCESS_COARSE_LOCATION) &&
                 (grantResults.length > 0 &&
@@ -177,14 +184,11 @@ public class MainActivity extends Activity {
     private void showDevices() {
         StringBuilder sb = new StringBuilder();
         Log.d(LOG_TAG, "show devices");
-        if (started) {
+        if (adapter.isDiscovering()) {
             adapter.cancelDiscovery();
         }
         started = adapter.startDiscovery();
-        if (started) {
-            sb.append(getString(R.string.others));
-        }
-        Log.d(LOG_TAG, "STRING Builder" + String.valueOf(sb));
+        Log.d(LOG_TAG, "suche gestartet: " + started);
     }
 
     public void verbinden() {

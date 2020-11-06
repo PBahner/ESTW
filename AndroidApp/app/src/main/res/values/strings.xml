@@ -6,7 +6,7 @@
 
     <string name="paired">Gekoppelte Geräte\n</string>
     <string name="others">Geräte in Reichweite\n</string>
-    <string name="template">\t%1$s (%2$s)\n</string>
+    <string name="template">%1$s (%2$s)</string>
     <string name="action_beenden">Beenden</string>
     <string name="action_info">Informationen</string>
 
