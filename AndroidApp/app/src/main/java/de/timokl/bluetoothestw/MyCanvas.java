@@ -14,10 +14,11 @@ import android.view.View;
 import java.util.Arrays;
 
 public class MyCanvas extends View {
-    private static int green = Color.rgb(0, 190, 0);
-    private static int yellow = Color.YELLOW;
-    private static int red = Color.RED;
-    private static int white = Color.WHITE;
+    private static final int green = Color.rgb(0, 190, 0);
+    private static final int yellow = Color.YELLOW;
+    private static final int red = Color.RED;
+    private static final int white = Color.WHITE;
+    private static final int black = Color.BLACK;
 
     Paint paint;
     Paint.FontMetrics fm;
@@ -25,7 +26,7 @@ public class MyCanvas extends View {
     Double ergebnis;
     int xM;
     int gleisBreite = 4;
-    boolean aktualisieren = true;
+    boolean updateOn = true;
     private static TouchListener pTouchListener;
     String LOG_TAG = "Canvas";
 
@@ -111,7 +112,7 @@ public class MyCanvas extends View {
             } else if (10 <= xClick && xClick <= 20 && 20 <= yClick && yClick <= 30) {
                 onTouchDown(x, y, 3);
             } else {
-                resetSignals(x, y);
+                resetSignals();
             }
         }
 
@@ -129,7 +130,7 @@ public class MyCanvas extends View {
         if (pTouchListener == null) return;
         pTouchListener.onTouchDown ((int) downX, (int) downY, signal);
     }
-    static void resetSignals(float downX, float downY) {
+    static void resetSignals() {
         if (pTouchListener == null) return;
         pTouchListener.resetSignals ();
     }
@@ -154,9 +155,10 @@ public class MyCanvas extends View {
     @SuppressLint("DrawAllocation")
     @Override
     public void onDraw(Canvas canvas) {
+        canvas.drawColor(black);
         Log.d(LOG_TAG, "Belegtmeldung "+ Arrays.toString(Belegtmeldung));
-        m = canvas.getHeight() / 90;
-        xM = (canvas.getWidth() - m * 110) / 2;
+        m = getHeight() / 90;
+        xM = (getWidth() - m * 110) / 2;
 
 
 //////////////////////////////////////////////////////////////////      Signal Rahmen      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -302,13 +304,13 @@ public class MyCanvas extends View {
         canvas.drawLine(pos("x", 87), pos("y", 70), pos("x", 89), pos("y", 70), paint);
 
 
-        paint.setColor(Color.BLACK);
+        paint.setColor(black);
         if (Weichen[0]){
             paint.setStrokeWidth(gleisBreite);
             canvas.drawLine(pos("x", 85), pos("y", 70) + gleisBreite, pos("x", 89), pos("y", 70) + gleisBreite, paint);
         } else {
             paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 85), pos("y", 70) + 3*m/2 + gleisBreite/2, pos("x", 89), pos("y", 70) + 3*m/2 + gleisBreite/2, paint);
+            canvas.drawLine(pos("x", 85), pos("y", 70) + (float)(3*m/2 + gleisBreite/2), pos("x", 89), pos("y", 70) + (float)(3*m/2 + gleisBreite/2), paint);
             paint.setStrokeWidth(gleisBreite);
         }
 
@@ -336,13 +338,13 @@ public class MyCanvas extends View {
         canvas.drawLine(pos("x", 41), pos("y", 70), pos("x", 43), pos("y", 70), paint);
 
 
-        paint.setColor(Color.BLACK);
+        paint.setColor(black);
         if (Weichen[1]){
             paint.setStrokeWidth(gleisBreite);
             canvas.drawLine(pos("x", 41), pos("y", 70) - gleisBreite, pos("x", 45), pos("y", 70) - gleisBreite, paint);
         } else {
             paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 41), pos("y", 70) - (3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 70) - (3*m/2 + gleisBreite/2), paint);
+            canvas.drawLine(pos("x", 41), pos("y", 70) - (float)(3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 70) - (float)(3*m/2 + gleisBreite/2), paint);
             paint.setStrokeWidth(gleisBreite);
         }
 
@@ -370,13 +372,13 @@ public class MyCanvas extends View {
         canvas.drawLine(pos("x", 41), pos("y", 20), pos("x", 43), pos("y", 20), paint);
 
 
-        paint.setColor(Color.BLACK);
+        paint.setColor(black);
         if (Weichen[2]){
             paint.setStrokeWidth(gleisBreite);
             canvas.drawLine(pos("x", 41), pos("y", 20) + gleisBreite, pos("x", 45), pos("y", 20) + gleisBreite, paint);
         } else {
             paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 41), pos("y", 20) + (3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 20) + (3*m/2 + gleisBreite/2), paint);
+            canvas.drawLine(pos("x", 41), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), paint);
             paint.setStrokeWidth(gleisBreite);
         }
 
@@ -404,13 +406,13 @@ public class MyCanvas extends View {
         canvas.drawLine(pos("x", 17), pos("y", 20), pos("x", 19), pos("y", 20), paint);
 
 
-        paint.setColor(Color.BLACK);
+        paint.setColor(black);
         if (Weichen[3]){
             paint.setStrokeWidth(gleisBreite);
             canvas.drawLine(pos("x", 15), pos("y", 20) + gleisBreite, pos("x", 19), pos("y", 20) + gleisBreite, paint);
         } else {
             paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 15), pos("y", 20) + 3*m/2 + gleisBreite/2, pos("x", 19), pos("y", 20) + 3*m/2 + gleisBreite/2, paint);
+            canvas.drawLine(pos("x", 15), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), pos("x", 19), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), paint);
             paint.setStrokeWidth(gleisBreite);
         }
 
@@ -604,7 +606,7 @@ public class MyCanvas extends View {
         canvas.restore();
 
 
-        if(aktualisieren) {
+        if(updateOn) {
             postInvalidateDelayed(200);
         }
 
@@ -680,7 +682,7 @@ public class MyCanvas extends View {
 
     private void GleisText(Canvas canvas, String text, int x, int y) {
         paint.setTextSize(m*3);
-        paint.setColor(Color.BLACK);
+        paint.setColor(black);
         paint.getFontMetrics(fm);
         int margin = 5;
 

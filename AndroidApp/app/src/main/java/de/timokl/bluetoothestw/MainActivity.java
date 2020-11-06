@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,14 +21,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
 
     private ArrayAdapter<String> listAdapter;
-    private Map<String, ScanResult> scanResults;
     private String mac_adress = "";
     private static final String LOG_TAG = "EstwApp";
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -38,11 +34,11 @@ public class MainActivity extends Activity {
     private static final int REQUEST_ACCESS_COARSE_LOCATION = 321;
 
     private BluetoothAdapter adapter;
-    private boolean started;
+    private boolean discoveryIsStarted;
 
     private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            boolean added = false;
+            boolean alreadyAdded = false;
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -50,10 +46,10 @@ public class MainActivity extends Activity {
                 for(int i=0; i<listAdapter.getCount(); i++){
                     Log.d(LOG_TAG, "|"+listAdapter.getItem(i) +"|"+ getString(R.string.template, device.getName(), device.getAddress())+"|");
                     if(listAdapter.getItem(i).equals(getString(R.string.template, device.getName(), device.getAddress()))){
-                        added = true;
+                        alreadyAdded = true;
                     }
                 }
-                if(!added){
+                if(!alreadyAdded){
                     listAdapter.add(getString(R.string.template,
                             device.getName(),
                             device.getAddress()));
@@ -70,7 +66,6 @@ public class MainActivity extends Activity {
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(myReceiver, filter);
         listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        scanResults = new HashMap<>();
 
         lv.setAdapter(listAdapter);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -82,8 +77,8 @@ public class MainActivity extends Activity {
                 // Display the selected item text on TextView
                 mac_adress = selectedItem.substring(selectedItem.length() - 18, selectedItem.length() - 1);
                 Log.d(LOG_TAG, "mac adreess: " + mac_adress);
-                if (!globaleVariablen.getIs_connected()) {
-                    verbinden();
+                if (!globalVariables.getIs_connected()) {
+                    connectToDevice();
                 } else {
                     Toast.makeText(getApplicationContext(),"Schon verbunden!",
                             Toast.LENGTH_LONG).show();
@@ -103,24 +98,8 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         listAdapter.clear();
-        scanResults.clear();
         adapter = null;
-        started = false;
-
-
-        /*if (ContextCompat.checkSelfPermission (this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            Log.d(LOG_TAG, "du brauchst mehr berechtigungen!");
-
-            if (!ActivityCompat.shouldShowRequestPermissionRationale (this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                ActivityCompat.requestPermissions (this, new String [] {Manifest.permission.READ_CONTACTS}, REQUEST_ACCESS_COARSE_LOCATION);
-            }
-
-        } else {
-            if (isBluetoothEnabled()) {
-                showDevices();
-            }
-        }*/
+        discoveryIsStarted = false;
 
         if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(LOG_TAG, "du brauchst mehr berechtigungen!");
@@ -137,9 +116,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (started) {
+        if (discoveryIsStarted) {
             adapter.cancelDiscovery();
-            started = false;
+            discoveryIsStarted = false;
         }
     }
 
@@ -182,18 +161,18 @@ public class MainActivity extends Activity {
         if (adapter.isDiscovering()) {
             adapter.cancelDiscovery();
         }
-        started = adapter.startDiscovery();
-        Log.d(LOG_TAG, "suche gestartet: " + started);
+        discoveryIsStarted = adapter.startDiscovery();
+        Log.d(LOG_TAG, "suche gestartet: " + discoveryIsStarted);
     }
 
-    public void verbinden() {
+    public void connectToDevice() {
         Log.d(LOG_TAG, "Verbinde mit " + mac_adress);
 
         BluetoothDevice remote_device = adapter.getRemoteDevice(mac_adress);
 
         // Socket erstellen
         try {
-            globaleVariablen.setSocket(remote_device.createInsecureRfcommSocketToServiceRecord(uuid));
+            globalVariables.setSocket(remote_device.createInsecureRfcommSocketToServiceRecord(uuid));
             Log.d(LOG_TAG, "Socket erstellt");
         } catch (Exception e) {
             Log.e(LOG_TAG, "Socket Erstellung fehlgeschlagen: " + e.toString());
@@ -203,18 +182,18 @@ public class MainActivity extends Activity {
 
         // Socket verbinden
         try {
-            globaleVariablen.getSocket().connect();
+            globalVariables.getSocket().connect();
             Log.d(LOG_TAG, "Socket verbunden");
-            globaleVariablen.setIs_connected(true);
+            globalVariables.setIs_connected(true);
         } catch (IOException e) {
-            globaleVariablen.setIs_connected(false);
+            globalVariables.setIs_connected(false);
             Log.e(LOG_TAG, "Socket kann nicht verbinden: " + e.toString());
         }
 
         // Socket beenden, falls nicht verbunden werden konnte
-        if (!globaleVariablen.getIs_connected()) {
+        if (!globalVariables.getIs_connected()) {
             try {
-                globaleVariablen.getSocket().close();
+                globalVariables.getSocket().close();
             } catch (Exception e) {
                 Log.e(LOG_TAG,
                         "Socket kann nicht beendet werden: " + e.toString());
@@ -223,23 +202,23 @@ public class MainActivity extends Activity {
 
         // Outputstream erstellen:
         try {
-            globaleVariablen.setStream_out(globaleVariablen.getSocket().getOutputStream());
+            globalVariables.setStream_out(globalVariables.getSocket().getOutputStream());
             Log.d(LOG_TAG, "OutputStream erstellt");
         } catch (IOException e) {
             Log.e(LOG_TAG, "OutputStream Fehler: " + e.toString());
-            globaleVariablen.setIs_connected(false);
+            globalVariables.setIs_connected(false);
         }
 
         // Inputstream erstellen
         try {
-            globaleVariablen.setStream_in(globaleVariablen.getSocket().getInputStream());
+            globalVariables.setStream_in(globalVariables.getSocket().getInputStream());
             Log.d(LOG_TAG, "InputStream erstellt");
         } catch (IOException e) {
             Log.e(LOG_TAG, "InputStream Fehler: " + e.toString());
-            globaleVariablen.setIs_connected(false);
+            globalVariables.setIs_connected(false);
         }
 
-        if (globaleVariablen.getIs_connected()) {
+        if (globalVariables.getIs_connected()) {
             Toast.makeText(this, "Verbunden mit " + mac_adress,
                     Toast.LENGTH_LONG).show();
 

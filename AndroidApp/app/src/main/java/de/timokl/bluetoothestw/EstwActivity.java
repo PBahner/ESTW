@@ -1,5 +1,6 @@
 package de.timokl.bluetoothestw;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -46,12 +47,12 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         Objects.requireNonNull(getSupportActionBar()).setSubtitle("MoBa Steuerung");
         canvas = findViewById(R.id.myCanvas);
         canvas.setTouchListener(this);
-        globaleVariablen.setContext(this);
+        final Context EstwActivityContext = this;
 
         startThread();
 
         Thread.State status = empfangenThread.getState();
-        if (Thread.State.NEW.equals(status) && globaleVariablen.getIs_connected()) {
+        if (Thread.State.NEW.equals(status) && globalVariables.getIs_connected()) {
             // first start
             Log.d(LOG_TAG, "start");
             empfangenThread.start();
@@ -61,10 +62,10 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         fab_bluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(globaleVariablen.getIs_connected()){
+                if(globalVariables.getIs_connected()){
                     trennen();
                 } else {
-                    Intent intent = new Intent(globaleVariablen.getContext(), MainActivity.class);
+                    Intent intent = new Intent(EstwActivityContext, MainActivity.class);
                     startActivity(intent);
                     stopThread();
                     //finish();
@@ -75,7 +76,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        int ce = v.getId();
+        //int ce = v.getId();
     }
 
     @Override
@@ -94,6 +95,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         android.widget.PopupMenu popupMenu = new android.widget.PopupMenu(wrapper, view);
         popupMenu.setOnMenuItemClickListener (new android.widget.PopupMenu.OnMenuItemClickListener ()
         {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onMenuItemClick (MenuItem item)
             {
@@ -151,9 +153,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     public void resetSignals(){
         first_selection = 'z';
         second_selection = 'z';
-        for (int i=0; i < canvas.SigAuswahl.length; i++) {
-            canvas.SigAuswahl[i] = false;
-        }
+        Arrays.fill(canvas.SigAuswahl, false);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         MenuItem itemTrennen = menu.findItem(R.id.item_trennen);
         MenuItem itemVerbinden = menu.findItem(R.id.item_verbinden);
 
-        if (globaleVariablen.getIs_connected()) {
+        if (globalVariables.getIs_connected()) {
             itemTrennen.setVisible(true);
             itemVerbinden.setVisible(false);
         } else {
@@ -198,12 +198,12 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
 
     public void trennen() {
-        if (globaleVariablen.getIs_connected() && globaleVariablen.getStream_out() != null) {
-            globaleVariablen.setIs_connected(false);
+        if (globalVariables.getIs_connected() && globalVariables.getStream_out() != null) {
+            globalVariables.setIs_connected(false);
             Log.d(LOG_TAG, "Trennen: Beende Verbindung");
             try {
-                globaleVariablen.getStream_out().flush();
-                globaleVariablen.getSocket().close();
+                globalVariables.getStream_out().flush();
+                globalVariables.getSocket().close();
                 Toast.makeText(this, "Getrennt!", Toast.LENGTH_LONG).show();
 
             } catch (IOException e) {
@@ -212,29 +212,29 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                 + e.toString());
             }
         } else
-            Log.d(LOG_TAG, "Trennen: Keine Verbindung zum beenden " + globaleVariablen.getIs_connected() + " " + globaleVariablen.getStream_out());
+            Log.d(LOG_TAG, "Trennen: Keine Verbindung zum beenden " + globalVariables.getIs_connected() + " " + globalVariables.getStream_out());
     }
 
     public void verarbeiten(View v) {
+        String message;
         if((first_selection == 'a' || first_selection == 'b') && second_selection == 'd'){
-            String message = "SFR" + first_selection + "," + 'c' + "E";
+            message = "SFR" + first_selection + "," + 'c' + "E";
             senden(message);
             message = "SFR" + 'c' + ',' + second_selection + "E";
-            senden(message);
         }else{
-            String message = "SFR" + first_selection + "," + second_selection + "E";
+            message = "SFR" + first_selection + "," + second_selection + "E";
             Log.d(LOG_TAG, "Sende Nachricht: " + message);
-            senden(message);
         }
+        senden(message);
         resetSignals();
     }
 
     public void senden(String message) {
         byte[] msgBuffer = message.getBytes();
-        if (globaleVariablen.getIs_connected()) {
+        if (globalVariables.getIs_connected()) {
             Log.d(LOG_TAG, "Sende Nachricht: " + message);
             try {
-                globaleVariablen.getStream_out().write(msgBuffer);
+                globalVariables.getStream_out().write(msgBuffer);
             } catch (IOException e) {
                 Log.e(LOG_TAG,
                         "Bluetest: Exception beim Senden: " + e.toString());
@@ -248,8 +248,8 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         StringBuilder msg = new StringBuilder();
 
         try {
-            if (globaleVariablen.getStream_in().available() > 0) {
-                laenge = globaleVariablen.getStream_in().read(buffer);
+            if (globalVariables.getStream_in().available() > 0) {
+                laenge = globalVariables.getStream_in().read(buffer);
                 Log.d(LOG_TAG,
                         "Anzahl empfangender Bytes: " + laenge);
 
@@ -358,7 +358,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
     public void startThread() {
         stopThread = false;
-        empfangenRun empfaenger = new empfangenRun();
+        receiveThread empfaenger = new receiveThread();
         empfangenThread = new Thread(empfaenger);//neuen Thread erstellen
     }
 
@@ -366,7 +366,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         stopThread = true;
     }
 
-    class empfangenRun implements Runnable{
+    class receiveThread implements Runnable{
 
         @Override
         public void run() {
@@ -375,8 +375,12 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
             while (!isFinishing()){
                 empfangen();
                 try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
+                    if(globalVariables.getStream_in().available() > 0){ // ToDo
+                        empfangen();
+                    } else {
+                        Thread.sleep(100);
+                    }
+                } catch (InterruptedException | IOException e) {
                     e.printStackTrace();
                 }
             }
