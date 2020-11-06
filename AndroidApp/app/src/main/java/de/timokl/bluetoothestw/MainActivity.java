@@ -14,9 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -29,15 +26,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static android.bluetooth.BluetoothDevice.*;
-
 public class MainActivity extends Activity {
 
     private ArrayAdapter<String> listAdapter;
     private Map<String, ScanResult> scanResults;
-    private String mac_adresse = "";
+    private String mac_adress = "";
     private static final String LOG_TAG = "EstwApp";
-    private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private static final int REQUEST_ENABLE_BT = 123;
     private static final int REQUEST_ACCESS_COARSE_LOCATION = 321;
@@ -85,7 +80,8 @@ public class MainActivity extends Activity {
                 String selectedItem = (String) parent.getItemAtPosition(position);
 
                 // Display the selected item text on TextView
-                mac_adresse = selectedItem.substring(selectedItem.length() - 19, selectedItem.length() - 2);
+                mac_adress = selectedItem.substring(selectedItem.length() - 18, selectedItem.length() - 1);
+                Log.d(LOG_TAG, "mac adreess: " + mac_adress);
                 if (!globaleVariablen.getIs_connected()) {
                     verbinden();
                 } else {
@@ -182,7 +178,6 @@ public class MainActivity extends Activity {
     }
 
     private void showDevices() {
-        StringBuilder sb = new StringBuilder();
         Log.d(LOG_TAG, "show devices");
         if (adapter.isDiscovering()) {
             adapter.cancelDiscovery();
@@ -192,9 +187,9 @@ public class MainActivity extends Activity {
     }
 
     public void verbinden() {
-        Log.d(LOG_TAG, "Verbinde mit " + mac_adresse);
+        Log.d(LOG_TAG, "Verbinde mit " + mac_adress);
 
-        BluetoothDevice remote_device = adapter.getRemoteDevice(mac_adresse);
+        BluetoothDevice remote_device = adapter.getRemoteDevice(mac_adress);
 
         // Socket erstellen
         try {
@@ -245,7 +240,7 @@ public class MainActivity extends Activity {
         }
 
         if (globaleVariablen.getIs_connected()) {
-            Toast.makeText(this, "Verbunden mit " + mac_adresse,
+            Toast.makeText(this, "Verbunden mit " + mac_adress,
                     Toast.LENGTH_LONG).show();
 
             Intent intent = new Intent(this, EstwActivity.class);
@@ -253,7 +248,7 @@ public class MainActivity extends Activity {
 
             finish();
         } else {
-            Toast.makeText(this, "Verbindungsfehler mit " + mac_adresse,
+            Toast.makeText(this, "Verbindungsfehler mit " + mac_adress,
                     Toast.LENGTH_LONG).show();
         }
     }
