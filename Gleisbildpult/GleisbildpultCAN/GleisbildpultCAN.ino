@@ -106,6 +106,7 @@ void setup() {
   
   Serial.begin(115200);
   Serial.println("Ready!");
+  //receiveEventCAN();
 }
 
 void loop() {
@@ -127,6 +128,7 @@ void receiveEventCAN() {
   byte receive_data[DLC_MSG_STELLPULT] = {};
   for(int i=0; i<DLC_MSG_STELLPULT; i++){
     receive_data[i] = canMsg.data[i];
+    //receive_data[i] = 119;              // Test, alle LEDs ein
     Serial.print(receive_data[i]); 
   }
   Serial.println(" empfangen");         // print the integer

@@ -6,7 +6,7 @@
 
 #define BRIGHTNESS_GLEIS 255
 #define BRIGHTNESS_LED 20
-#define BRIGHTNESS_WS 15
+#define BRIGHTNESS_WS 1
 
 class Neopixel{
   public:
