@@ -70,6 +70,7 @@ class ESTW{
   private:
     boolean weichenSoll[4] = {0, 0, 0, 0}; // gewünschte Weichenposition
     boolean weichen[4] = {0, 0, 0, 0}; // Weichenposition
+    boolean weichenSperre[4] = {0, 0, 0, 0}; // sind Weichen gesperrt 0=frei 1=gesperrt
     boolean belegtmeldung[6] = {1, 1, 1, 1, 1, 1};
     boolean shiftIn1[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // Schieberegister-In
     boolean shiftIn2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -81,7 +82,7 @@ class ESTW{
                                {'e', 'n'}, {'e', 'e'}, {'e', 'a'}}; // Signal E (Innenkreis)
 
     // egal = 0, Fahrt = 1
-    // egal = 0, Plusstellung = 1, Minusstellung = 2
+    // egal = 0, Plusstellung (gerade) = 1, Minusstellung (abzweigend) = 2
     // egal = 0, muss frei sein = 1
     //                                     Signale    Weichen  Belegtmeldung
     int fahrstrassenVerschluss[9][15] = {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
