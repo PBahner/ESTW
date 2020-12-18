@@ -8,16 +8,18 @@ void ESTW::weicheSchalten(int weiche, int pos){
 
 void ESTW::weichenSchalten(){
   for(int weiche=0; weiche<4; weiche++){
-    if(weichen[weiche] != weichenSoll[weiche]){
-      /*Serial.print("Setze Weiche ");
-      Serial.print(weiche);
-      Serial.print(" auf ");
-      Serial.println(weichenSoll[weiche]);
-      //weichen[weiche] = weichenSoll[weiche];*/    //position in weichen array eintragen
-      
-      bitWrite(wertOut1, ((weiche+1)*2)-weichenSoll[weiche]-1, 1);  //Weichen Relais anziehen
-    }else{
-      bitWrite(wertOut1, ((weiche+1)*2)-weichenSoll[weiche]-1, 0);  //Weichen Relais abfallen
+    if(weichenSperre[weiche] == 0){  // ist Weiche nicht gesperrt kann sie gestellt werden
+      if(weichen[weiche] != weichenSoll[weiche]){  // Weichen Rückmeldung entsprich nicht dem Soll-Wert
+        /*Serial.print("Setze Weiche ");
+        Serial.print(weiche);
+        Serial.print(" auf ");
+        Serial.println(weichenSoll[weiche]);
+        //weichen[weiche] = weichenSoll[weiche];*/    //position in weichen array eintragen
+        
+        bitWrite(wertOut1, ((weiche+1)*2)-weichenSoll[weiche]-1, 1);  //Weichen Relais anziehen
+      }else{
+        bitWrite(wertOut1, ((weiche+1)*2)-weichenSoll[weiche]-1, 0);  //Weichen Relais abfallen
+      }
     }
   }
 }
@@ -72,16 +74,21 @@ boolean ESTW::fahrwegFrei(int fahrstrasse){
 
 void ESTW::fahrwegSichern(int fahrstrasse){
   boolean richtigeWPos = false;
-  while(!richtigeWPos){
+  while(!richtigeWPos){ // Solange nicht alle Weichen richtig stehen: Weichen schalten
   for(int i=5; i<9; i++){
     switch(fahrstrassenVerschluss[fahrstrasse][i]){
       case 1: weicheSchalten(i-5, 1); break;
       case 2: weicheSchalten(i-5, 0); break;
     }
-    if(weichen[0] == fahrstrassenVerschluss[fahrstrasse][i]-1 or weichen[0] == 0 and
-       weichen[1] == fahrstrassenVerschluss[fahrstrasse][i]-1 or weichen[1] == 0 and
-       weichen[2] == fahrstrassenVerschluss[fahrstrasse][i]-1 or weichen[2] == 0 and
-       weichen[3] == fahrstrassenVerschluss[fahrstrasse][i]-1 or weichen[3] == 0){
+    // richtige Weichen sperren
+    /*if(weichen[i-5] == fahrstrassenVerschluss[fahrstrasse][i]-1 and fahrstrassenVerschluss[fahrstrasse][i] != 0){
+      weichenSperre[i-5] = 1;
+    }*/
+    // prüfen ob alle Weichenpositionen richtig sind
+    if(weichen[0] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
+       weichen[1] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
+       weichen[2] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
+       weichen[3] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0){
       richtigeWPos = true;
     }
   }
