@@ -13,3 +13,9 @@ Projekt seit Juni 2018
 Für die andere hälfte der Modelleisenbahn gibt es ein Stellpult. Die "Kästchen" sind mit dem 3D-Drucker gedruckt und werden mit WS2811 ICs angesteuert.
 
 ![neues Gleisbildpult](Gleisbildpult/GBS_neu.jpg)
+
+Update:
+------------
+Das Stellpult hat jetzt eine Vollständige Umrahmung (auch 3D gedruckt)
+
+![Umrahmung Gleisbildpult](Gleisbildpult/GBS_rahmen.jpg)
