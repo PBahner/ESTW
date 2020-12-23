@@ -5,7 +5,7 @@
 
 #define DLC_MSG_STELLPULT 5
 #define PIN 2
-#define LENGTH 20
+#define LENGTH 25
 
 struct can_frame canMsg;
 MCP2515 mcp2515(10);
@@ -66,23 +66,30 @@ Neopixel w2(neopixels,      12, 1, l1_1, l1_7);
 Neopixel w3(neopixels,       6, 1, l1_2, l2_0);
 Neopixel w4(neopixels,      11, 1, l1_3, l2_1);
 Neopixel w5(neopixels,      17, 1, l1_4, l2_2);
-Neopixel Gl1CurveAbove(neopixels,   0, 0, l0_0);
-Neopixel Gl1CurveBelow(neopixels,   5, 0, l0_4);
+Neopixel w6(neopixels,      24, 1, l1_5, l2_3);
+Neopixel Gl1KuveOben(neopixels,   0, 0, l0_0);
+Neopixel Gl1KuveUnten(neopixels,   5, 0, l0_4);
 
 // RANGIERSIGNALE
 Neopixel RaA(neopixels,     2, 3, l0_0, l3_3);
 Neopixel RaB(neopixels,     8, 3, l0_1, l3_4);
 Neopixel RaC(neopixels,    14, 3, l0_2, l3_5);
+Neopixel Ra4(neopixels,    23, 3, l0_7, l3_7);
 
 //Gleisstücken dazwischen
-Neopixel GlAboveMiddle(neopixels,  18, 0, l4_0);
-Neopixel GlBelowMiddle(neopixels,  19, 0, l4_1);
+Neopixel GlObenMitte(neopixels,  18, 0, l4_0);
+Neopixel GlObenMitte2(neopixels,  20, 0, l4_0);
+Neopixel GlUntenMitte(neopixels,  19, 0, l4_1);
 
 
 // GLEISE (Felder mit Beschriftung)
 Neopixel Gl1(neopixels,     1, 0, l0_0);
 Neopixel Gl2(neopixels,     7, 0, l0_1);
 Neopixel Gl3(neopixels,    13, 0, l0_2);
+Neopixel Gl4(neopixels,    22, 0, l0_7);
+
+// ABSTELL GLEISE  (Endstücken der Abstellgleise)
+Neopixel AbstellV(neopixels,    21, 0, l0_7);
 
 // GLEISE am Signal
 Neopixel Gl1Sig(neopixels,  3, 0, l0_4);
@@ -122,13 +129,14 @@ void loop() {
     Serial.print(" ");
     receiveEventCAN();
   }
+  //receiveEventCAN(); // zum Testen
 }
 
 void receiveEventCAN() {
   byte receive_data[DLC_MSG_STELLPULT] = {};
   for(int i=0; i<DLC_MSG_STELLPULT; i++){
     receive_data[i] = canMsg.data[i];
-    //receive_data[i] = 119;              // Test, alle LEDs ein
+    //receive_data[i] = 255;              // Test, alle LEDs ein
     Serial.print(receive_data[i]); 
   }
   Serial.println(" empfangen");         // print the integer
@@ -138,23 +146,29 @@ void receiveEventCAN() {
   w3.updateleds(receive_data);
   w4.updateleds(receive_data);
   w5.updateleds(receive_data);
-  Gl1CurveAbove.updateleds(receive_data);
-  Gl1CurveBelow.updateleds(receive_data);
+  w6.updateleds(receive_data);
+  Gl1KuveOben.updateleds(receive_data);
+  Gl1KuveUnten.updateleds(receive_data);
   
   RaA.updateleds(receive_data);
   RaB.updateleds(receive_data);
   RaC.updateleds(receive_data);
+  Ra4.updateleds(receive_data);
   
   Gl1.updateleds(receive_data);
   Gl2.updateleds(receive_data);
   Gl3.updateleds(receive_data);
+  Gl4.updateleds(receive_data);
   
   Gl1Sig.updateleds(receive_data);
   Gl2Sig.updateleds(receive_data);
   Gl3Sig.updateleds(receive_data);
 
-  GlAboveMiddle.updateleds(receive_data);
-  GlBelowMiddle.updateleds(receive_data);
+  AbstellV.updateleds(receive_data);
+
+  GlObenMitte.updateleds(receive_data);
+  GlObenMitte2.updateleds(receive_data);
+  GlUntenMitte.updateleds(receive_data);
   
   SigA.updateleds(receive_data);
   SigB.updateleds(receive_data);
