@@ -42,10 +42,10 @@ void ESTW::fahrstrassenPosSenden(){
 }
 
 int ESTW::fahrstrasseVorhanden(char buffer[20]){
-  char start = buffer[3];   // Start-Signal
-  char ziel = buffer[5];    // Ziel-Signal
+  char start = buffer[3];  // Start-Signal
+  char ziel = buffer[5];  // Ziel-Signal
   boolean vorhanden = false;
-  if(buffer[4] == ','){     //zusätzliche überprüfung ob ein komma vorhanden ist
+  if(buffer[4] == ','){  //zusätzliche überprüfung ob ein komma vorhanden ist
     for(int i=0; i<sizeof(fahrstrassen); i++){
       if(fahrstrassen[i][0] == start and fahrstrassen[i][1] == ziel){
         return i;
@@ -74,17 +74,18 @@ boolean ESTW::fahrwegFrei(int fahrstrasse){
 
 void ESTW::fahrwegSichern(int fahrstrasse){
   boolean richtigeWPos = false;
-  while(!richtigeWPos){ // Solange nicht alle Weichen richtig stehen: Weichen schalten
-  for(int i=5; i<9; i++){
-    switch(fahrstrassenVerschluss[fahrstrasse][i]){
-      case 1: weicheSchalten(i-5, 1); break;
-      case 2: weicheSchalten(i-5, 0); break;
+  while(!richtigeWPos){  // Solange nicht alle Weichen richtig stehen: Weichen schalten
+  for(int i=5; i<9; i++){  // 5,6,7,8 (alle Weichen durchgehen)
+    switch(fahrstrassenVerschluss[fahrstrasse][i]){  // Weichen schalten
+      case 1: weicheSchalten(i-5, 1); break;  // abzweigend
+      case 2: weicheSchalten(i-5, 0); break;  // gerade
     }
     // richtige Weichen sperren
-    /*if(weichen[i-5] == fahrstrassenVerschluss[fahrstrasse][i]-1 and fahrstrassenVerschluss[fahrstrasse][i] != 0){
+    if(weichen[i-5] == fahrstrassenVerschluss[fahrstrasse][i]-1 and fahrstrassenVerschluss[fahrstrasse][i] != 0){
       weichenSperre[i-5] = 1;
-    }*/
+    }
     // prüfen ob alle Weichenpositionen richtig sind
+    // Weichenposition = Weichenposition aus Verschlussplan      oder Weichenposition ist egal
     if(weichen[0] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
        weichen[1] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
        weichen[2] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
@@ -98,25 +99,34 @@ void ESTW::fahrwegSichern(int fahrstrasse){
 void ESTW::signalSchalten(int fahrstrasse, boolean pos){
   for(int i=0; i<5; i++){
     if((fahrstrassenVerschluss[fahrstrasse][i] == 1) and (pos == 1)){
+      //  Fahrstraße AC
       if(fahrstrasse == 0){
-        i2c_data.valueSignal1 = 1;
+        i2c_data.valueSignal1 = 1;  // Formsignal
+      //  Fahrstraße BC
       }else if(fahrstrasse == 1){
-        i2c_data.valueSignal2 = 1;
+        i2c_data.valueSignal2 = 1;  // Formsignal
       }
+      //  Fahrstraße DN
       if(fahrstrasse == 3){
         KS1.setSignalbild(2);
+      //  Fahrstraße DE      DA, und AC nicht auf "fahrt"
       }else if(fahrstrasse == 4 or (fahrstrasse == 5 and einzustellendeFahrstrasse[0] != 4)){
         KS1.setSignalbild(7);
+      //  Fahrstraße DA, und AC auf "fahrt"       AC, und DA auf "fahrt"
       }else if((fahrstrasse == 5 and einzustellendeFahrstrasse[0] == 4) or (einzustellendeFahrstrasse[5] == 4 and fahrstrasse == 0)){
         KS1.setSignalbild(5);
       }
+      //  Fahrstraße EN
       if(fahrstrasse == 6){
         KS2.setSignalbild(2);
+      //  Fahrstraße EE        EA, und AC nicht auf "fahrt"
       }else if(fahrstrasse == 7 or (fahrstrasse == 8 and einzustellendeFahrstrasse[0] != 4)){
         KS2.setSignalbild(7);
+      //  Fahrstraße EA, und AC auf "fahrt"       AC, und EA auf "fahrt"
       }else if((fahrstrasse == 8 and einzustellendeFahrstrasse[0] == 4) or (einzustellendeFahrstrasse[8] == 4 and fahrstrasse == 0)){
         KS2.setSignalbild(5);
       }
+    //  Signale ausschalten
     }else if((fahrstrassenVerschluss[fahrstrasse][i] == 1) and (pos == 0)){
       if(fahrstrassenVerschluss[fahrstrasse][0] == 1){
         i2c_data.valueSignal1 = 0;
@@ -140,6 +150,36 @@ void ESTW::gleisSchalten(int fahrstrasse, boolean pos){
       bitWrite(wertOut2, i, 1); // evtl. 0 ?
     }else if((fahrstrassenVerschluss[fahrstrasse][i] == 1) and (pos == 0)){
       bitWrite(wertOut2, i, 0);
+    }
+  }
+}
+
+boolean ESTW::zugAngekommen(int fahrstrasse) {
+  byte count = 0;
+  byte sum = 0;
+  for(int b=0; b<6; b++) {  // alle Gleise durchgehen
+    //  alle gebrauchten Fahrstraßen sind Frei
+    if(fahrstrassenVerschluss[fahrstrasse][b+9] == 1) {
+      sum++;
+    }
+    if(fahrstrassenVerschluss[fahrstrasse][b+9] == 1 and belegtmeldung[b] == 0) {
+      count++;
+    //  gebrauchte Fahrstraße ist belegt und Zielgleis
+    }else if(fahrstrassenVerschluss[fahrstrasse][b+9] == 1 and belegtmeldung[b] == 1 and b+1 == zielGleise[fahrstrasse]) {
+      count++;
+    }
+  }
+  if(count==sum){
+    return true;    
+  }
+  return false;
+}
+
+void ESTW::fahrstrasseAufloesen(int fahrstrasse) {  
+  for(int i=5; i<9; i++){
+    //  Weiche wurde benutzt
+    if(fahrstrassenVerschluss[fahrstrasse][i] != 0) {
+      weichenSperre[i-5] = 0;
     }
   }
 }

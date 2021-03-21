@@ -56,10 +56,15 @@ class ESTW{
     boolean fahrwegFrei(int);
     void signalSchalten(int, boolean);
     void gleisSchalten(int, boolean);
+    boolean zugAngekommen(int);
+    void fahrstrasseAufloesen(int);
     void output();
     void input();
     boolean signale_weichen = false; // Gleisunterbrechungen nach Signalen Schalten
+    //  0 = nicht einstellen, 1 = Fahrweg sichern, 2 = Signal schalten,
+    //  3 = Gleis schalten, 4 = Signal/Gleis aus, 5 = FS auflösen
     byte einzustellendeFahrstrasse[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    byte zielGleise[9] = {3, 3, 4, 0, 6, 1, 0, 6, 1};
 
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);

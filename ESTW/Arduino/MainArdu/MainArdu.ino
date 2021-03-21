@@ -37,7 +37,7 @@ void loop() {
     //    Prüfen ob der Fahrweg (Gleise) frei ist
     if(Estw.einzustellendeFahrstrasse[i] == 1){
       if(Estw.fahrwegFrei(i)){        
-        Estw.fahrwegSichern(i);   //    Weichen stellen
+        Estw.fahrwegSichern(i);   //  Weichen stellen
         Estw.einzustellendeFahrstrasse[i] = 2;
       }
     }
@@ -63,6 +63,13 @@ void loop() {
         Estw.gleisSchalten(i, 0);
         Estw.signalSchalten(i, 0);
         Estw.verzoegerungSignalhalt[i] = 0;
+        Estw.einzustellendeFahrstrasse[i] = 5;
+      }
+    }
+    if(Estw.einzustellendeFahrstrasse[i] == 5) {
+      // ToDo
+      if(Estw.zugAngekommen(i)){
+        Estw.fahrstrasseAufloesen(i);
         Estw.einzustellendeFahrstrasse[i] = 0;
       }
     }
