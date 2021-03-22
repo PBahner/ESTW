@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -38,18 +39,21 @@ public class MainActivity extends Activity {
 
     private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
+            Log.d(LOG_TAG, "onReceive");
             boolean alreadyAdded = false;
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 for(int i=0; i<listAdapter.getCount(); i++){
+                    assert device != null;
                     Log.d(LOG_TAG, "|"+listAdapter.getItem(i) +"|"+ getString(R.string.template, device.getName(), device.getAddress())+"|");
-                    if(listAdapter.getItem(i).equals(getString(R.string.template, device.getName(), device.getAddress()))){
+                    if(Objects.equals(listAdapter.getItem(i), getString(R.string.template, device.getName(), device.getAddress()))){
                         alreadyAdded = true;
                     }
                 }
                 if(!alreadyAdded){
+                    assert device != null;
                     listAdapter.add(getString(R.string.template,
                             device.getName(),
                             device.getAddress()));

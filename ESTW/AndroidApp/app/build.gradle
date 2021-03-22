@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29 //29
+    compileSdkVersion 28 //29
     defaultConfig {
         applicationId "de.timokl.bluetoothestw"
-        minSdkVersion 17 //27
-        targetSdkVersion 29
+        minSdkVersion 19 //27 für Handy //17
+        targetSdkVersion 28 // 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

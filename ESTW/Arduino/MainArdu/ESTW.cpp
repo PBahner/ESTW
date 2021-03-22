@@ -80,10 +80,7 @@ void ESTW::fahrwegSichern(int fahrstrasse){
       case 1: weicheSchalten(i-5, 1); break;  // abzweigend
       case 2: weicheSchalten(i-5, 0); break;  // gerade
     }
-    // richtige Weichen sperren
-    if(weichen[i-5] == fahrstrassenVerschluss[fahrstrasse][i]-1 and fahrstrassenVerschluss[fahrstrasse][i] != 0){
-      weichenSperre[i-5] = 1;
-    }
+    weichenSchalten();
     // prüfen ob alle Weichenpositionen richtig sind
     // Weichenposition = Weichenposition aus Verschlussplan      oder Weichenposition ist egal
     if(weichen[0] == fahrstrassenVerschluss[fahrstrasse][i]-1 or fahrstrassenVerschluss[fahrstrasse][i] == 0 and
@@ -93,6 +90,13 @@ void ESTW::fahrwegSichern(int fahrstrasse){
       richtigeWPos = true;
     }
   }
+  }
+  for(int i=0; i<4; i++){
+    // richtige Weichen sperren
+    if(weichen[i] == fahrstrassenVerschluss[fahrstrasse][i+5]-1 and fahrstrassenVerschluss[fahrstrasse][i+5] != 0){
+      weichenSperre[i] = true;
+      Serial.println("weiche gesperrt");
+    }
   }
 }
 
