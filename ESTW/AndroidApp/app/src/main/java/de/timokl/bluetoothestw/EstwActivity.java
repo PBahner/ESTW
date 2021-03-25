@@ -277,20 +277,21 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                 Log.d(LOG_TAG, "Fahrstrasse: " + (i + 3 + fahrstrasse) + "\t" + (char) (buffer[i+3+fahrstrasse]));
                                 switch ((char) buffer[i+3+fahrstrasse]){
                                     case 49: canvas.einzustellendeFahrstrassen[fahrstrasse] = 1; Log.d(LOG_TAG, "Die" + fahrstrasse); break;    // Fahrstrasse angefragt/wird eingestellt
-                                    case 50:
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;                 // Fahrstrasse festegelegt
+                                    case 50:  // 2: Fahrweg gesichert
+                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;  // Fahrstrasse festegelegt
+                                        break;
+                                    case 51:  // 3: Signal geschaltet
+                                    case 52:  // 4: Gleis geschaltet
                                         for(int signal=0; signal<5; signal++){
                                             if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 2; break;      // Signal auf grün stellen
+                                                canvas.Signale[signal] = 2; break;  // Signal auf grün stellen
                                             }
                                         }
-                                        break;
-                                    case 51:
-                                    case 52:
+                                    case 53:  // 5: Signal/Gleis aus -> zug schon in Abschnitt
                                         canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
                                         for(int signal=0; signal<5; signal++){
                                             if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 2; break;      // Signal auf grün stellen
+                                                canvas.Signale[signal] = 0; break;  // Signal auf rot stellen
                                             }
                                         }
                                         break;
@@ -300,7 +301,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                         canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
                                         for(int signal=0; signal<5; signal++){
                                             if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 0; break;      // Signal auf rot stellen
+                                                canvas.Signale[signal] = 0; break;  // Signal auf rot stellen
                                             }
                                         }
                                         break;     // Fahrstrasse nicht eingestellt
@@ -377,9 +378,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     if(globalVariables.getStream_in().available() > 0){ // ToDo
                         empfangen();
-                    } else {
-                        Thread.sleep(100);
-                    }
+                    } else Thread.sleep(100);  // ToDo: versuchen zu entfernen
                 } catch (InterruptedException | IOException e) {
                     e.printStackTrace();
                 }

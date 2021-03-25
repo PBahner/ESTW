@@ -220,11 +220,12 @@ public class MyCanvas extends View {
 
         TrColor(4, 5);
         canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 46), pos("y", 64), paint); //Gl 5-6 unten
+        TrColor(5, 4);
         canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 46), pos("y", 26), paint); //Gl 5-6 oben
 
 
 
-        TrColor(4, 1);
+        TrColor(4, 0);
         canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 50), pos("y", 69), paint); //Gl 5-2
 
 
@@ -607,17 +608,34 @@ public class MyCanvas extends View {
 
 
         if(updateOn) {
-            postInvalidateDelayed(200);
+            postInvalidateDelayed(50);
         }
 
     }
 
     public void TrColor(int gl1, int gl2){
-        if(Belegtmeldung[gl1] && Belegtmeldung[gl2]){
+        paint.setColor(yellow);
+        boolean abschnitt2FS = false;
+        for(int i=0; i<9; i++) {
+            if (fahrstrassenVerschluss[i][gl2 + 9] == 1 && einzustellendeFahrstrassen[i] == 3) {
+                abschnitt2FS = true; break;
+            }
+        }
+        if(Belegtmeldung[gl1] && (gl1 != 4 || Belegtmeldung[gl2] || abschnitt2FS)){  // && Belegtmeldung[gl2]
             paint.setColor(red);
         } else {
-            paint.setColor(yellow);
+            for(int i=0; i<9; i++) {
+                if (fahrstrassenVerschluss[i][gl1 + 9] == 1 && gl1 != 4 &&
+                        (einzustellendeFahrstrassen[i] == 2 || (einzustellendeFahrstrassen[i] == 3 && !Belegtmeldung[gl1]))) {
+                    paint.setColor(green);
+                } else if (fahrstrassenVerschluss[i][gl1 + 9] == 1 && fahrstrassenVerschluss[i][gl2 + 9] == 1 && gl1 == 4 &&
+                        (einzustellendeFahrstrassen[i] == 2 || (einzustellendeFahrstrassen[i] == 3 && !Belegtmeldung[gl1] && !Belegtmeldung[gl2]))) {
+                    paint.setColor(green);
+                }
+            }
         }
+
+
     }
 
     public void GlColor(int gl){
