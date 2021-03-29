@@ -5,7 +5,7 @@
 
 #define DLC_MSG_STELLPULT 5
 #define PIN 2
-#define LENGTH 28
+#define LENGTH 30
 
 struct can_frame canMsg;
 MCP2515 mcp2515(10);
@@ -75,13 +75,13 @@ Neopixel RaA(neopixels,     2, 3, l0_0, l3_3);
 Neopixel RaB(neopixels,     8, 3, l0_1, l3_4);
 Neopixel RaC(neopixels,    14, 3, l0_2, l3_5);
 Neopixel Ra4(neopixels,    23, 3, l0_7, l3_6);
-Neopixel Ra5(neopixels,    23, 3, l0_3, l3_7);
+Neopixel Ra5(neopixels,    26, 3, l0_3, l3_7);
 
 //Gleisstücken dazwischen
 Neopixel GlObenMitte(neopixels,  18, 0, l4_0);
 Neopixel GlObenMitte2(neopixels,  20, 0, l4_0);
 Neopixel GlUntenMitte(neopixels,  19, 0, l4_1);
-//Neopixel GlUntenLinks1(neopixels,  28, 0, l4_1);///
+Neopixel GlUntenLinks1(neopixels,  29, 0, l4_3);// TESTEN !!!
 
 
 // GLEISE (Felder mit Beschriftung)
@@ -89,11 +89,11 @@ Neopixel Gl1(neopixels,     1, 0, l0_0);
 Neopixel Gl2(neopixels,     7, 0, l0_1);
 Neopixel Gl3(neopixels,    13, 0, l0_2);
 Neopixel Gl4(neopixels,    22, 0, l0_7);
-Neopixel Gl5(neopixels,    26, 0, l0_3);
+Neopixel Gl5(neopixels,    27, 0, l0_3);
 
 // ABSTELL GLEISE  (Endstücken der Abstellgleise)
 Neopixel AbstellV(neopixels,    21, 0, l0_7);
-Neopixel AbstellH(neopixels,    27, 0, l0_3);
+Neopixel AbstellH(neopixels,    28, 0, l0_3);
 
 // GLEISE am Signal
 Neopixel Gl1Sig(neopixels,  3, 0, l0_4);
@@ -176,6 +176,7 @@ void receiveEventCAN() {
   GlObenMitte.updateleds(receive_data);
   GlObenMitte2.updateleds(receive_data);
   GlUntenMitte.updateleds(receive_data);
+  GlUntenLinks1.updateleds(receive_data);
   
   SigA.updateleds(receive_data);
   SigB.updateleds(receive_data);
