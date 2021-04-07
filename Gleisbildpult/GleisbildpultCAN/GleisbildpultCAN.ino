@@ -74,8 +74,8 @@ Neopixel Gl1KuveUnten(neopixels,  5, 0, l0_4);
 Neopixel RaA(neopixels,     2, 3, l0_0, l3_3);
 Neopixel RaB(neopixels,     8, 3, l0_1, l3_4);
 Neopixel RaC(neopixels,    14, 3, l0_2, l3_5);
-Neopixel Ra4(neopixels,    23, 3, l0_7, l3_6);
-Neopixel Ra5(neopixels,    26, 3, l0_3, l3_7);
+Neopixel Ra4(neopixels,    23, 3, l0_7, l3_7);
+Neopixel Ra5(neopixels,    26, 3, l0_3, l3_6);
 
 //Gleisstücken dazwischen
 Neopixel GlObenMitte(neopixels,  18, 0, l4_0);
