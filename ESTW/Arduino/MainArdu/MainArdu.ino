@@ -8,6 +8,8 @@ char buffer[20]; // Daten Array fuer die einkommenden Seriellen Daten
 int bufferCount;
 unsigned long previousMillis1 = 0;
 unsigned long previousMillis2 = 0;
+unsigned long delayUntilTrackIsPowered[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned long delayUntilSignalTurnsRed[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
@@ -22,7 +24,7 @@ void setup() {
   pinMode(datenOut, OUTPUT);
 
   //Daten ausgeben
-  Estw.output();
+  Estw.outputShiftRegister();
 
   // I2C
   Wire.begin(2); // I2C Adresse 2
@@ -33,65 +35,65 @@ void setup() {
 
 ////////////////////////////////////LOOP////////////////////////////////////
 void loop() {
-  for(int i=0; i<sizeof(Estw.einzustellendeFahrstrasse); i++){
+  for(int i=0; i<sizeof(Estw.statusOfRoutes); i++){
     //    Prüfen ob der Fahrweg (Gleise) frei ist
-    if(Estw.einzustellendeFahrstrasse[i] == 1){
-      if(Estw.fahrwegFrei(i)){        
-        Estw.fahrwegSichern(i);   //  Weichen stellen
-        Estw.einzustellendeFahrstrasse[i] = 2;
+    if(Estw.statusOfRoutes[i] == 1){
+      if(Estw.isRouteClear(i)){        
+        Estw.secureRoute(i);   //  Weichen stellen
+        Estw.statusOfRoutes[i] = 2;
       }
     }
     //    Signal schalten
-    if(Estw.einzustellendeFahrstrasse[i] == 2){
-      if(Estw.fahrwegFrei(i)){    //    zusätzliche überprüfung ob die Gleise Frei sind   
-        Estw.signalSchalten(i, 1);
-        Estw.verzoegerungGleisfrei[i] = millis();
-        Estw.einzustellendeFahrstrasse[i] = 3;
+    if(Estw.statusOfRoutes[i] == 2){
+      if(Estw.isRouteClear(i)){    //    zusätzliche überprüfung ob die Gleise Frei sind   
+        Estw.setSignal(i, 1);
+        delayUntilTrackIsPowered[i] = millis();
+        Estw.statusOfRoutes[i] = 3;
       }
     }
     //    nach der Verzögerung wird das Gleis geschalten
-    if(Estw.einzustellendeFahrstrasse[i] == 3){
-      if(Estw.fahrwegFrei(i) and Estw.verzoegerungGleisfrei[i]+2000 <= millis()){
-        Estw.gleisSchalten(i, 1);
-        Estw.verzoegerungGleisfrei[i] = 0;
-        Estw.verzoegerungSignalhalt[i] = millis();
-        Estw.einzustellendeFahrstrasse[i] = 4;
+    if(Estw.statusOfRoutes[i] == 3){
+      if(Estw.isRouteClear(i) and delayUntilTrackIsPowered[i]+2000 <= millis()){
+        Estw.setPowerOfTrack(i, 1);
+        delayUntilTrackIsPowered[i] = 0;
+        delayUntilSignalTurnsRed[i] = millis();
+        Estw.statusOfRoutes[i] = 4;
       }
     }
-    if(Estw.einzustellendeFahrstrasse[i] == 4 and Estw.verzoegerungSignalhalt[i]+2000 <= millis()){
-      if(!Estw.fahrwegFrei(i)){
-        Estw.gleisSchalten(i, 0);
-        Estw.signalSchalten(i, 0);
-        Estw.verzoegerungSignalhalt[i] = 0;
-        Estw.einzustellendeFahrstrasse[i] = 5;
+    if(Estw.statusOfRoutes[i] == 4 and delayUntilSignalTurnsRed[i]+2000 <= millis()){
+      if(!Estw.isRouteClear(i)){
+        Estw.setPowerOfTrack(i, 0);
+        Estw.setSignal(i, 0);
+        delayUntilSignalTurnsRed[i] = 0;
+        Estw.statusOfRoutes[i] = 5;
       }
     }
-    if(Estw.einzustellendeFahrstrasse[i] == 5) {
+    if(Estw.statusOfRoutes[i] == 5) {
       // ToDo
-      if(Estw.zugAngekommen(i)){
-        Estw.fahrstrasseAufloesen(i);
-        Estw.einzustellendeFahrstrasse[i] = 0;
+      if(Estw.isTrainArrived(i)){
+        Estw.cancelRoute(i);
+        Estw.statusOfRoutes[i] = 0;
       }
     }
   }
 
   if(millis() - previousMillis1 >= 250){
     previousMillis1 = millis();
-    Estw.weichenSchalten();
+    Estw.setAllSwitches();
   }
 
   if(millis() - previousMillis2 >= 100){
     previousMillis2 = millis();
     //Daten Auslesen und Ausgeben
-    Estw.input();
-    Estw.output();
+    Estw.inputShiftRegister();
+    Estw.outputShiftRegister();
   
-    Estw.weichenPosSenden();
-    Estw.fahrstrassenPosSenden();
+    Estw.uartSendSwitchStates();
+    Estw.uartSendRouteStates();
   }
 
-  Estw.KS1.updateSignalbild();
-  Estw.KS2.updateSignalbild();
+  Estw.KS1.updateSignalPattern();
+  Estw.KS2.updateSignalPattern();
 }
 
 ////////////////////////////////////SERIAL////////////////////////////////////
@@ -111,16 +113,16 @@ void serialEvent() {
         case 48: pos = 0; break;
         case 49: pos = 1; break;
       }
-      Estw.weicheSchalten(weiche, pos);
+      Estw.setSwitch(weiche, pos);
 
     } else if (buffer[1] == FahrstrassenTag and buffer[2] == AnfrageTag) { // Anfrage für Fahrstraße einstellen erkannt (FR.,.E)
       int numFahrstrasse;
-      numFahrstrasse = Estw.fahrstrasseVorhanden(buffer);
+      numFahrstrasse = Estw.isRouteAvailable(buffer);
       //Serial.print(numFahrstrasse);
 
       // Wird die Fahrstraße angenommen ?
       if (numFahrstrasse != 100) { // Fahrstrasse muss Vorhanden sein
-        Estw.einzustellendeFahrstrasse[numFahrstrasse] = 1;
+        Estw.statusOfRoutes[numFahrstrasse] = 1;
       } 
     }
     // empfangene Daten zurücksetzen

@@ -14,13 +14,13 @@
 #define WeichenTag 87 // W
 #define UmschaltTag 85 // U
 #define FahrstrassenTag 70 // F
-#define FestgelegtTag 70 // F
 #define AnfrageTag 82 // R (für request)
-#define AngenommenTag 65 // A (für accepted)
-#define AbgelehntTag 78 // N (für not accepted)
-#define UnbesetztTag 85 // U
-#define ClearTag 67 // C
-#define BefahrenTag 85 // U
+//#define FestgelegtTag 70 // F
+//#define AngenommenTag 65 // A (für accepted)
+//#define AbgelehntTag 78 // N (für not accepted)
+//#define UnbesetztTag 85 // U
+//#define AufloesenTag 67 // C (für clear)
+//#define BefahrenTag 85 // U
 
 
 #define datenIn 11
@@ -46,42 +46,46 @@ class ESTW{
   public:
     ESTW ();
     
-    void weicheSchalten(int, int);
-    void weichenSchalten();
-    void weichenPosSenden();
-    void fahrstrassenPosSenden();
-    int fahrstrasseVorhanden(char[20]);
-    char getFahrstrasse(int, boolean);
-    void fahrwegSichern(int);
-    boolean fahrwegFrei(int);
-    void signalSchalten(int, boolean);
-    void gleisSchalten(int, boolean);
-    boolean zugAngekommen(int);
-    void fahrstrasseAufloesen(int);
-    void output();
-    void input();
-    boolean signale_weichen = false; // Gleisunterbrechungen nach Signalen Schalten
+    void setSwitch(int, int);
+    void setAllSwitches();
+    void uartSendSwitchStates();
+    void uartSendRouteStates();
+    boolean isRouteClear(int);
+    int isRouteAvailable(char[20]);
+    void secureRoute(int);
+    void setSignal(int, boolean);
+    void setPowerOfTrack(int, boolean);
+    boolean isTrainArrived(int);
+    void cancelRoute(int);
+    void outputShiftRegister();
+    void inputShiftRegister();
+
     //  0 = nicht einstellen, 1 = Fahrweg sichern, 2 = Signal schalten,
     //  3 = Gleis schalten, 4 = Signal/Gleis aus, 5 = FS auflösen
-    byte einzustellendeFahrstrasse[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-    byte zielGleise[9] = {3, 3, 4, 0, 6, 1, 0, 6, 1};
+    byte statusOfRoutes[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);
-    unsigned long verzoegerungGleisfrei[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned long verzoegerungSignalhalt[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
     i2c_struct i2c_data;
     
   private:
-    boolean weichenSoll[4] = {0, 0, 0, 0}; // gewünschte Weichenposition
-    boolean weichen[4] = {0, 0, 0, 0}; // Weichenposition
-    boolean weichenSperre[4] = {0, 0, 0, 0}; // sind Weichen gesperrt 0=frei 1=gesperrt
-    boolean belegtmeldung[6] = {1, 1, 1, 1, 1, 1};
+    boolean controlMode = false; // Gleisunterbrechungen nach Signalen Schalten
+    boolean targetSwitchState[4] = {0, 0, 0, 0}; // gewünschte Weichenposition
+    boolean currentSwitchState[4] = {0, 0, 0, 0}; // Weichenposition
+    boolean lockedSwitches[4] = {0, 0, 0, 0}; // sind Weichen gesperrt 0=frei 1=gesperrt
+    boolean isTrackOccupied[6] = {1, 1, 1, 1, 1, 1};
     boolean shiftIn1[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // Schieberegister-In
     boolean shiftIn2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    byte wertOut1 = 0b00000000; // Schieberegister-Out
-    byte wertOut2 = 0b00000000;
-    char fahrstrassen[9][2] = {{'a', 'c'}, {'b', 'c'},              // Ausfahrten aus Bahnhof 
+    byte dataOut1 = 0b00000000; // Schieberegister-Out
+    byte dataOut2 = 0b00000000;
+
+    const byte destinationTrack[9] = {3, 3, 4, 0, 6, 1, 0, 6, 1};
+
+    void turnOnSignalOfRoute(int);
+    void turnOffSignalOfRoute(int);
+    
+    const char routes[9][2] = {{'a', 'c'}, {'b', 'c'},              // Ausfahrten aus Bahnhof 
                                {'c', 'd'},                          // Signal C (Berg)
                                {'d', 'n'}, {'d', 'e'}, {'d', 'a'},  // Signal D
                                {'e', 'n'}, {'e', 'e'}, {'e', 'a'}}; // Signal E (Innenkreis)
@@ -90,14 +94,14 @@ class ESTW{
     // egal = 0, Plusstellung (gerade) = 1, Minusstellung (abzweigend) = 2
     // egal = 0, muss frei sein = 1
     //                                     Signale    Weichen  Belegtmeldung
-    int fahrstrassenVerschluss[9][15] = {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
-                                         {0,1,0,0,0,  1,0,0,0,  0,0,1,0,0,0}, // BC
-                                         {0,0,1,0,0,  0,0,2,0,  0,0,0,1,0,0}, // CD
-                                         {0,0,0,1,0,  0,0,2,2,  0,0,0,0,1,0}, // DN
-                                         {0,0,0,1,0,  0,1,2,1,  0,0,0,0,1,1}, // DE
-                                         {0,0,0,1,0,  2,2,2,1,  1,0,0,0,1,0}, // DA
-                                         {0,0,0,0,1,  0,0,1,2,  0,0,0,0,1,0}, // EN
-                                         {0,0,0,0,1,  0,1,1,1,  0,0,0,0,1,0}, // EE
-                                         {0,0,0,0,1,  2,2,1,1,  1,0,0,0,1,0}};// EA
+    const int routesLockTable[9][15] = {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
+                                               {0,1,0,0,0,  1,0,0,0,  0,0,1,0,0,0}, // BC
+                                               {0,0,1,0,0,  0,0,2,0,  0,0,0,1,0,0}, // CD
+                                               {0,0,0,1,0,  0,0,2,2,  0,0,0,0,1,0}, // DN
+                                               {0,0,0,1,0,  0,1,2,1,  0,0,0,0,1,1}, // DE
+                                               {0,0,0,1,0,  2,2,2,1,  1,0,0,0,1,0}, // DA
+                                               {0,0,0,0,1,  0,0,1,2,  0,0,0,0,1,0}, // EN
+                                               {0,0,0,0,1,  0,1,1,1,  0,0,0,0,1,0}, // EE
+                                               {0,0,0,0,1,  2,2,1,1,  1,0,0,0,1,0}};// EA
 };
 #endif

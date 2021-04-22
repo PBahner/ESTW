@@ -7,10 +7,10 @@
 class KsSignal{
   public:
     KsSignal(byte, byte, byte, byte);
-    void updateSignalbild();
-    void setSignalbild(byte);
+    void updateSignalPattern();
+    void setSignalPattern(byte);
   private:
-    byte Signalbild = 0;
+    byte SignalPattern = 0;
     byte pin1;
     byte pin2;
     byte pin3;

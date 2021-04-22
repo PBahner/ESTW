@@ -15,28 +15,28 @@ KsSignal::KsSignal(byte p1, byte p2, byte p3, byte p4){
   digitalWrite(pin4, LOW);
 }
 
-void KsSignal::setSignalbild(byte sb){
-  Signalbild = sb;
+void KsSignal::setSignalPattern(byte sb){
+  SignalPattern = sb;
   // Hp0
-  if (Signalbild == 1){
+  if (SignalPattern == 1){
     pinModus(OUTPUT, 0, 0, OUTPUT);
     digitalWrite(pin1, HIGH);
     digitalWrite(pin4, LOW);
   }
   // Ks1
-  if (Signalbild == 2){
+  if (SignalPattern == 2){
     pinModus(OUTPUT, 0, 0, OUTPUT);
     digitalWrite(pin1, LOW);
     digitalWrite(pin4, HIGH);
   }
   // Ks2
-  if (Signalbild == 3){
+  if (SignalPattern == 3){
     pinModus(OUTPUT, 0, OUTPUT, 0);
     digitalWrite(pin1, LOW);
     digitalWrite(pin3, HIGH);
   }
   // Ks1 + Zs3
-  if (Signalbild == 5){
+  if (SignalPattern == 5){
     pinModus(OUTPUT, OUTPUT, 0, OUTPUT);
     digitalWrite(pin1, LOW);
     digitalWrite(pin2, LOW);
@@ -44,9 +44,9 @@ void KsSignal::setSignalbild(byte sb){
   }
 }
 
-void KsSignal::updateSignalbild(){
+void KsSignal::updateSignalPattern(){
   // Ks1 blinkend + Zs3v (weiß)
-  if ((millis() % 2000 <= 1000) and (Signalbild == 4 or Signalbild == 9)){
+  if ((millis() % 2000 <= 1000) and (SignalPattern == 4 or SignalPattern == 9)){
     // Ks1
     pinModus(0, 0, 0, 0);
     pinModus(OUTPUT, 0, 0, OUTPUT);
@@ -59,18 +59,18 @@ void KsSignal::updateSignalbild(){
     digitalWrite(pin2, HIGH);
     digitalWrite(pin4, LOW);
     delayMicroseconds(1020);
-    if (Signalbild == 9){
+    if (SignalPattern == 9){
       pinModus(OUTPUT, 0, OUTPUT, 0);
       digitalWrite(pin1, HIGH);
       digitalWrite(pin3, LOW);
     }
-  } else if((millis() % 2000 <= 2000) and (Signalbild == 4 or Signalbild == 9)){
+  } else if((millis() % 2000 <= 2000) and (SignalPattern == 4 or SignalPattern == 9)){
     // Zs3v
     pinModus(0, OUTPUT, 0, OUTPUT);
     digitalWrite(pin2, HIGH);
     digitalWrite(pin4, LOW);
     delay(2);
-    if (Signalbild == 9){
+    if (SignalPattern == 9){
       pinModus(OUTPUT, 0, OUTPUT, 0);
       digitalWrite(pin1, HIGH);
       digitalWrite(pin3, LOW);
@@ -78,7 +78,7 @@ void KsSignal::updateSignalbild(){
   }
   
   // Ks1 blinkend + Zs3v + Zs3 (weiß)
-  if ((millis() % 2000 <= 1000) and (Signalbild == 6 or Signalbild == 10)){
+  if ((millis() % 2000 <= 1000) and (SignalPattern == 6 or SignalPattern == 10)){
     // Ks1
     pinModus(OUTPUT, 0, 0, OUTPUT);
     digitalWrite(pin1, LOW);
@@ -96,7 +96,7 @@ void KsSignal::updateSignalbild(){
     digitalWrite(pin4, HIGH);
     delayMicroseconds(400);
     
-    if (Signalbild == 10){
+    if (SignalPattern == 10){
       pinModus(OUTPUT, 0, OUTPUT, 0);
       digitalWrite(pin1, HIGH);
       digitalWrite(pin3, LOW);
@@ -104,7 +104,7 @@ void KsSignal::updateSignalbild(){
       delay(2);
     }
   }
-  else if((millis() % 2000 <= 2000) and (Signalbild == 6 or Signalbild == 10)){
+  else if((millis() % 2000 <= 2000) and (SignalPattern == 6 or SignalPattern == 10)){
     // Zs3v
     pinModus(0, OUTPUT, 0, OUTPUT);
     digitalWrite(pin2, HIGH);
@@ -117,7 +117,7 @@ void KsSignal::updateSignalbild(){
     delayMicroseconds(1400);
     
     pinModus(0, 0, 0, 0);
-    if (Signalbild == 10){
+    if (SignalPattern == 10){
       pinModus(OUTPUT, 0, OUTPUT, 0);
       digitalWrite(pin1, HIGH);
       digitalWrite(pin3, LOW);
@@ -125,7 +125,7 @@ void KsSignal::updateSignalbild(){
   }
 
   // Ks2 + Zs3 (weiß)
-  if (Signalbild == 7 or Signalbild == 11){
+  if (SignalPattern == 7 or SignalPattern == 11){
     // Zs3
     pinModus(0, OUTPUT, 0, OUTPUT);
     digitalWrite(pin2, LOW);
@@ -137,7 +137,7 @@ void KsSignal::updateSignalbild(){
     digitalWrite(pin1, LOW);
     digitalWrite(pin3, HIGH);
     delay(1);
-    if (Signalbild == 11){
+    if (SignalPattern == 11){
       pinModus(OUTPUT, 0, OUTPUT, 0);
       digitalWrite(pin1, HIGH);
       digitalWrite(pin3, LOW);
@@ -145,7 +145,7 @@ void KsSignal::updateSignalbild(){
   }
   
   // Ks2 + weiß
-  if (Signalbild == 8){
+  if (SignalPattern == 8){
     // Ks2
     pinModus(OUTPUT, 0, OUTPUT, 0);
     digitalWrite(pin1, LOW);
