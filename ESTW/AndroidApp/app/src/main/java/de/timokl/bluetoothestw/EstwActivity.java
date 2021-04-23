@@ -31,7 +31,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     MyCanvas canvas;
     byte[] buffer = new byte[1024]; // Puffer
 
-    private Thread empfangenThread;
+    private Thread bluetoothReceiveThread;
     private boolean stopThread = false;
 
     private char first_selection = 'z';
@@ -51,19 +51,19 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
         startThread();
 
-        Thread.State status = empfangenThread.getState();
-        if (Thread.State.NEW.equals(status) && globalVariables.getIs_connected()) {
+        Thread.State status = bluetoothReceiveThread.getState();
+        if (Thread.State.NEW.equals(status) && globalVariables.isConnected()) {
             // first start
             Log.d(LOG_TAG, "start");
-            empfangenThread.start();
+            bluetoothReceiveThread.start();
         }
 
         FloatingActionButton fab_bluetooth = findViewById(R.id.fab_show_bluetooth);
         fab_bluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(globalVariables.getIs_connected()){
-                    trennen();
+                if(globalVariables.isConnected()){
+                    disconnectBluetoothConnection();
                 } else {
                     Intent intent = new Intent(EstwActivityContext, MainActivity.class);
                     startActivity(intent);
@@ -80,7 +80,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onTouchDown(int moveX, int moveY, final int weiche) {
+    public void onTouchDown(int moveX, int moveY, final int Switch) {
         Log.d(LOG_TAG, "onTouchDown");
         final LinearLayout root = findViewById(R.id.containerLayout);
         final View view = new View(getApplicationContext());
@@ -104,12 +104,15 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                 {
                     case R.id.item_wu:
                         Log.i(LOG_TAG, "wu");
-                        Log.d(LOG_TAG, "SWU" + weiche + "," + boolToInt(!canvas.Weichen[weiche]) + "E");
-                        senden("SWU" + weiche + "," + boolToInt(!canvas.Weichen[weiche]) + "E"); break;
+                        Log.d(LOG_TAG, "SWU" + Switch + "," + boolToInt(!canvas.currentSwitchStates[Switch]) + "E");
+                        bluetoothSend("SWU" + Switch + "," + boolToInt(!canvas.currentSwitchStates[Switch]) + "E");
+                        break;
                     case R.id.item_wue:
-                        Log.i(LOG_TAG, "wue"); break;
+                        Log.i(LOG_TAG, "wue");
+                        break;
                     case R.id.item_wus:
-                        Log.i(LOG_TAG, "wus"); break;
+                        Log.i(LOG_TAG, "wus");
+                        break;
 
                 }
                 return true;
@@ -122,27 +125,37 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onTouchDown(int moveX, int moveY, final String signal) {
+    public void onTouchDown(int moveX, int moveY, final char signal) {
         int sig_id = 0;
 
         Log.d(LOG_TAG, "onTouchDown Signal");
         Toast.makeText(getApplicationContext(), signal, Toast.LENGTH_SHORT).show();
 
         switch (signal){
-            case "a": sig_id = 0; break;
-            case "b": sig_id = 1; break;
-            case "c": sig_id = 2; break;
-            case "d": sig_id = 3; break;
-            case "e": sig_id = 4; break;
-            case "n": sig_id = 5; break;
+            case 'a': sig_id = 0;
+                break;
+            case 'b': sig_id = 1;
+                break;
+            case 'c': sig_id = 2;
+                break;
+            case 'd': sig_id = 3;
+                break;
+            case 'e': sig_id = 4;
+                break;
+            case 'n': sig_id = 5;
+                break;
         }
         int c = 0;
-        for(Boolean value : canvas.SigAuswahl){ // zählen, wie viel schon ausgewählt wurde
+        for(Boolean value : canvas.selectedSignals){ // zählen, wie viel schon ausgewählt wurde
             if(value){c++;}
         }
         switch (c){                             // -> höchstens 2 auswählen
-            case 0: first_selection = signal.charAt(0); canvas.SigAuswahl[sig_id] = true;
-            case 1: second_selection = signal.charAt(0); canvas.SigAuswahl[sig_id] = true;
+            case 0:
+                first_selection = signal;
+                canvas.selectedSignals[sig_id] = true; break;
+            case 1:
+                second_selection = signal;
+                canvas.selectedSignals[sig_id] = true; break;
         }
         if(c < 2){
             Log.d(LOG_TAG, "Signal Rechtecke" + Arrays.deepToString(canvas.SigRects));
@@ -153,7 +166,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     public void resetSignals(){
         first_selection = 'z';
         second_selection = 'z';
-        Arrays.fill(canvas.SigAuswahl, false);
+        Arrays.fill(canvas.selectedSignals, false);
     }
 
     @Override
@@ -165,15 +178,15 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem itemTrennen = menu.findItem(R.id.item_trennen);
-        MenuItem itemVerbinden = menu.findItem(R.id.item_verbinden);
+        MenuItem itemDisconnect = menu.findItem(R.id.item_disconnect);
+        MenuItem itemConnect = menu.findItem(R.id.item_connect);
 
-        if (globalVariables.getIs_connected()) {
-            itemTrennen.setVisible(true);
-            itemVerbinden.setVisible(false);
+        if (globalVariables.isConnected()) {
+            itemDisconnect.setVisible(true);
+            itemConnect.setVisible(false);
         } else {
-            itemTrennen.setVisible(false);
-            itemVerbinden.setVisible(true);
+            itemDisconnect.setVisible(false);
+            itemConnect.setVisible(true);
         }
         return true;
     }
@@ -181,15 +194,15 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if (R.id.item_verbinden == item.getItemId()) {
+        if (R.id.item_connect == item.getItemId()) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             stopThread();
             finish();
         }
 
-        if(R.id.item_trennen == item.getItemId()) {
-            trennen();
+        if(R.id.item_disconnect == item.getItemId()) {
+            disconnectBluetoothConnection();
         }
 
         return true;
@@ -197,12 +210,12 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    public void trennen() {
-        if (globalVariables.getIs_connected() && globalVariables.getStream_out() != null) {
-            globalVariables.setIs_connected(false);
+    public void disconnectBluetoothConnection() {
+        if (globalVariables.isConnected() && globalVariables.getStreamOut() != null) {
+            globalVariables.setIsConnected(false);
             Log.d(LOG_TAG, "Trennen: Beende Verbindung");
             try {
-                globalVariables.getStream_out().flush();
+                globalVariables.getStreamOut().flush();
                 globalVariables.getSocket().close();
                 Toast.makeText(this, "Getrennt!", Toast.LENGTH_LONG).show();
 
@@ -212,29 +225,29 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
                                 + e.toString());
             }
         } else
-            Log.d(LOG_TAG, "Trennen: Keine Verbindung zum beenden " + globalVariables.getIs_connected() + " " + globalVariables.getStream_out());
+            Log.d(LOG_TAG, "Trennen: Keine Verbindung zum beenden " + globalVariables.isConnected() + " " + globalVariables.getStreamOut());
     }
 
-    public void verarbeiten(View v) {
+    public void onExecute(View v) {
         String message;
         if((first_selection == 'a' || first_selection == 'b') && second_selection == 'd'){
             message = "SFR" + first_selection + "," + 'c' + "E";
-            senden(message);
+            bluetoothSend(message);
             message = "SFR" + 'c' + ',' + second_selection + "E";
         }else{
             message = "SFR" + first_selection + "," + second_selection + "E";
             Log.d(LOG_TAG, "Sende Nachricht: " + message);
         }
-        senden(message);
+        bluetoothSend(message);
         resetSignals();
     }
 
-    public void senden(String message) {
+    public void bluetoothSend(String message) {
         byte[] msgBuffer = message.getBytes();
-        if (globalVariables.getIs_connected()) {
+        if (globalVariables.isConnected()) {
             Log.d(LOG_TAG, "Sende Nachricht: " + message);
             try {
-                globalVariables.getStream_out().write(msgBuffer);
+                globalVariables.getStreamOut().write(msgBuffer);
             } catch (IOException e) {
                 Log.e(LOG_TAG,
                         "Bluetest: Exception beim Senden: " + e.toString());
@@ -243,76 +256,21 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void empfangen() {
-        int laenge; // Anzahl empf. Bytes
+    public void bluetoothReceive() {
+        int length; // Anzahl empf. Bytes
         StringBuilder msg = new StringBuilder();
 
         try {
-            if (globalVariables.getStream_in().available() > 0) {
-                laenge = globalVariables.getStream_in().read(buffer);
+            if (globalVariables.getStreamIn().available() > 0) {
+                length = globalVariables.getStreamIn().read(buffer);
                 Log.d(LOG_TAG,
-                        "Anzahl empfangender Bytes: " + laenge);
+                        "Anzahl empfangender Bytes: " + length);
 
-
-                for (int i = 0; i < laenge; i++) {
-
-                    if ((char) buffer[i] == 83){
-//83 = "S" //48 = "0"//66 = "B"//69 = "E"//87 = "W"//80 = "P" //70 = "F"//65 = "A"//78 = "N"
-                        //"S" gefunden
-                        Log.d(LOG_TAG, "S gefunden");
-                        if ((char) buffer[i+1] == 66){  //Belegtmeldung
-                            //"B" gefunden
-                            Log.d(LOG_TAG, "B gefunden");
-                            Belegtmeldung(i + 1);
-                        }
-                        if ((char) buffer[i+1] == 87 && (char) buffer[i+2] == 80){  //Weichen Position
-                            Log.d(LOG_TAG, "WP gefunden"); //man soll z.B.: "SWP2,0" bekommen
-                            weicheSchalten(i + 2);
-
-                        }
-
-                        if ((char) buffer[i+1] == 70 && (char) buffer[i+2] == 80){ //Fahrstrassen Status
-                            Log.d(LOG_TAG, "FP gefunden"); //man soll z.B.: "SFP000000000" bekommen
-                            for(int fahrstrasse=0; fahrstrasse<canvas.fahrstrassen.length; fahrstrasse++){
-                                Log.d(LOG_TAG, "Fahrstrasse: " + (i + 3 + fahrstrasse) + "\t" + (char) (buffer[i+3+fahrstrasse]));
-                                switch ((char) buffer[i+3+fahrstrasse]){
-                                    case 49: canvas.einzustellendeFahrstrassen[fahrstrasse] = 1; Log.d(LOG_TAG, "Die" + fahrstrasse); break;    // Fahrstrasse angefragt/wird eingestellt
-                                    case 50:  // 2: Fahrweg gesichert
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 2;  // Fahrstrasse festegelegt
-                                        break;
-                                    case 51:  // 3: Signal geschaltet
-                                    case 52:  // 4: Gleis geschaltet
-                                        for(int signal=0; signal<5; signal++){
-                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 2; break;  // Signal auf grün stellen
-                                            }
-                                        }
-                                    case 53:  // 5: Signal/Gleis aus -> zug schon in Abschnitt
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 3;
-                                        for(int signal=0; signal<5; signal++){
-                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 0; break;  // Signal auf rot stellen
-                                            }
-                                        }
-                                        break;
-                                    // Fahrstrasse wird befahren
-                                    // Signal auf rot stellen
-                                    default:
-                                        canvas.einzustellendeFahrstrassen[fahrstrasse] = 0;
-                                        for(int signal=0; signal<5; signal++){
-                                            if(canvas.fahrstrassenVerschluss[fahrstrasse][signal] == 1) {
-                                                canvas.Signale[signal] = 0; break;  // Signal auf rot stellen
-                                            }
-                                        }
-                                        break;     // Fahrstrasse nicht eingestellt
-                                }
-                            }
-                        }
-                    }
-
-                    // Message zusammensetzen:
+                for (int i = 0; i < length; i++) {
+                    //  Daten verarbeiten, wenn 1. Buchstabe 'S'
+                    splitReceivedData(i);
+                    //  Message zusammensetzen:
                     msg.append((char) buffer[i]);
-
                 }
 
                 Log.d(LOG_TAG, "Message: " + msg);
@@ -327,27 +285,93 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void Belegtmeldung(int bPos){
-        Log.d(LOG_TAG, "Belegtmeldung empfangen");
-        for (int i=1; i < 7; i++) {
-            switch (buffer[bPos+i]){
-                case 48: canvas.Belegtmeldung[i-1] = false; break;
-                case 49: canvas.Belegtmeldung[i-1] = true; break;
+    public void splitReceivedData(int bPos) {
+        if ((char) buffer[bPos] == 83){
+//83 = "S" //48 = "0"//66 = "B"//69 = "E"//87 = "W"//80 = "P" //70 = "F"//65 = "A"//78 = "N"
+            //"S" gefunden
+            Log.d(LOG_TAG, "S gefunden");
+            if ((char) buffer[bPos+1] == 66){  //Belegtmeldung
+                //"B" gefunden
+                Log.d(LOG_TAG, "B gefunden");
+                receivedTrackOccupied(bPos + 1);
+            }
+            if ((char) buffer[bPos+1] == 87 && (char) buffer[bPos+2] == 80){  //Weichen Position
+                Log.d(LOG_TAG, "WP gefunden"); //man soll z.B.: "SWP2,0" bekommen
+                setSwitch(bPos + 2);
+
+            }
+
+            if ((char) buffer[bPos+1] == 70 && (char) buffer[bPos+2] == 80){ //Fahrstrassen Status
+                Log.d(LOG_TAG, "FP gefunden"); //man soll z.B.: "SFP000000000" bekommen
+                receivedRouteStatus(bPos + 3);
             }
         }
     }
 
-    public void weicheSchalten(int bPos){
+    public void receivedTrackOccupied(int bPos){
+        Log.d(LOG_TAG, "Belegtmeldung empfangen");
+        for (int i=1; i < 7; i++) {
+            //  48 -> Frei  49 -> Belegt
+            canvas.isTrackOccupied[i - 1] = buffer[bPos + i] != 48;
+        }
+    }
+
+    public void setSwitch(int bPos){
         //int weiche = buffer[bPos+1]-48;
         boolean pos = false;
         for(int i=1; i<5; i++){
 
             switch (buffer[bPos+i]){
-                case 48: pos = false; break;
-                case 49: pos = true; break;
+                case 48: pos = false;
+                    break;  //  gerade
+                case 49: pos = true;
+                    break;  // abzweigend
             }
             Log.d(LOG_TAG, i-1 +" "+ pos);
-            canvas.Weichen[i-1] = pos;
+            canvas.currentSwitchStates[i-1] = pos;
+        }
+    }
+
+    public void receivedRouteStatus(int bPos) {
+        for(int route = 0; route<canvas.routes.length; route++){
+            Log.d(LOG_TAG, "Fahrstrasse: " + (bPos + route) + "\t" + (char) (buffer[bPos + route]));
+            switch ((char) buffer[bPos + route]){
+                case 49:  // Fahrstrasse angefragt/wird eingestellt
+                    canvas.statusOfRoutes[route] = 1;
+                    Log.d(LOG_TAG, "Die" + route);
+                    break;
+                case 50:  // 2: Fahrweg gesichert
+                    canvas.statusOfRoutes[route] = 2;  // Fahrstrasse festegelegt
+                    break;
+                case 51:  // 3: Signal geschaltet
+                case 52:  // 4: Gleis geschaltet
+                    for(int signal=0; signal<5; signal++){
+                        if(canvas.routesLockTable[route][signal] == 1) {
+                            canvas.signalStates[signal] = 2;  // Signal auf grün stellen
+                            break;
+                        }
+                    }
+                case 53:  // 5: Signal/Gleis aus -> zug schon in Abschnitt
+                    canvas.statusOfRoutes[route] = 3;
+                    for(int signal=0; signal<5; signal++){
+                        if(canvas.routesLockTable[route][signal] == 1) {
+                            canvas.signalStates[signal] = 0;  // Signal auf rot stellen
+                            break;
+                        }
+                    }
+                    break;
+                // Fahrstrasse wird befahren
+                // Signal auf rot stellen
+                default:
+                    canvas.statusOfRoutes[route] = 0;
+                    for(int signal=0; signal<5; signal++){
+                        if(canvas.routesLockTable[route][signal] == 1) {
+                            canvas.signalStates[signal] = 0;  // Signal auf rot stellen
+                            break;
+                        }
+                    }
+                    break;     // Fahrstrasse nicht eingestellt
+            }
         }
     }
 
@@ -359,8 +383,8 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
 
     public void startThread() {
         stopThread = false;
-        receiveThread empfaenger = new receiveThread();
-        empfangenThread = new Thread(empfaenger);//neuen Thread erstellen
+        receiveThread receiver = new receiveThread();
+        bluetoothReceiveThread = new Thread(receiver);  //neuen Thread erstellen
     }
 
     public void stopThread() {
@@ -374,10 +398,10 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
             if (stopThread)
                 return;
             while (!isFinishing()){
-                empfangen();
+                bluetoothReceive();
                 try {
-                    if(globalVariables.getStream_in().available() > 0){ // ToDo
-                        empfangen();
+                    if(globalVariables.getStreamIn().available() > 0){ // ToDo
+                        bluetoothReceive();
                     } else Thread.sleep(100);  // ToDo: versuchen zu entfernen
                 } catch (InterruptedException | IOException e) {
                     e.printStackTrace();

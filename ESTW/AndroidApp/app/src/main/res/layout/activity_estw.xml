@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="?attr/colorAccent"
+            android:background="#000000"
             android:visibility="visible"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="@dimen/fab_margin"
-        android:onClick="verarbeiten"
+        android:onClick="onExecute"
         app:backgroundTintMode="src_over"
         app:srcCompat="@android:drawable/stat_sys_upload" />
 

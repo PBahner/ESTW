@@ -20,15 +20,15 @@ public class globalVariables extends Application {
         globalVariables.socket = socket;
     }
 
-    public static InputStream getStream_in() {
+    public static InputStream getStreamIn() {
         return stream_in;
     }
 
-    public static void setStream_in(InputStream stream_in) {
+    public static void setStreamIn(InputStream stream_in) {
         globalVariables.stream_in = stream_in;
     }
 
-    public static OutputStream getStream_out() {
+    public static OutputStream getStreamOut() {
         return stream_out;
     }
 
@@ -36,11 +36,11 @@ public class globalVariables extends Application {
         globalVariables.stream_out = stream_out;
     }
 
-    public static boolean getIs_connected() {
+    public static boolean isConnected() {
         return is_connected;
     }
 
-    public static void setIs_connected(boolean is_connected) {
+    public static void setIsConnected(boolean is_connected) {
         globalVariables.is_connected = is_connected;
     }
 }

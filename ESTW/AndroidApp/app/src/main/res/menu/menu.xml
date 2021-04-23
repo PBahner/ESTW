@@ -1,11 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.timo.testmenu.MainActivity">
     <item
-        android:id="@+id/item_verbinden"
+        android:id="@+id/item_connect"
         android:title="@string/verbinden" />
     <item
-        android:id="@+id/item_trennen"
+        android:id="@+id/item_disconnect"
         android:title="@string/trennen" />
 </menu>

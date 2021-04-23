@@ -14,10 +14,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.AdapterView;
-import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -80,8 +80,8 @@ public class MainActivity extends Activity {
 
                 // Display the selected item text on TextView
                 mac_adress = selectedItem.substring(selectedItem.length() - 18, selectedItem.length() - 1);
-                Log.d(LOG_TAG, "mac adreess: " + mac_adress);
-                if (!globalVariables.getIs_connected()) {
+                Log.d(LOG_TAG, "mac adress: " + mac_adress);
+                if (!globalVariables.isConnected()) {
                     connectToDevice();
                 } else {
                     Toast.makeText(getApplicationContext(),"Schon verbunden!",
@@ -188,14 +188,14 @@ public class MainActivity extends Activity {
         try {
             globalVariables.getSocket().connect();
             Log.d(LOG_TAG, "Socket verbunden");
-            globalVariables.setIs_connected(true);
+            globalVariables.setIsConnected(true);
         } catch (IOException e) {
-            globalVariables.setIs_connected(false);
+            globalVariables.setIsConnected(false);
             Log.e(LOG_TAG, "Socket kann nicht verbinden: " + e.toString());
         }
 
         // Socket beenden, falls nicht verbunden werden konnte
-        if (!globalVariables.getIs_connected()) {
+        if (!globalVariables.isConnected()) {
             try {
                 globalVariables.getSocket().close();
             } catch (Exception e) {
@@ -210,19 +210,19 @@ public class MainActivity extends Activity {
             Log.d(LOG_TAG, "OutputStream erstellt");
         } catch (IOException e) {
             Log.e(LOG_TAG, "OutputStream Fehler: " + e.toString());
-            globalVariables.setIs_connected(false);
+            globalVariables.setIsConnected(false);
         }
 
         // Inputstream erstellen
         try {
-            globalVariables.setStream_in(globalVariables.getSocket().getInputStream());
+            globalVariables.setStreamIn(globalVariables.getSocket().getInputStream());
             Log.d(LOG_TAG, "InputStream erstellt");
         } catch (IOException e) {
             Log.e(LOG_TAG, "InputStream Fehler: " + e.toString());
-            globalVariables.setIs_connected(false);
+            globalVariables.setIsConnected(false);
         }
 
-        if (globalVariables.getIs_connected()) {
+        if (globalVariables.isConnected()) {
             Toast.makeText(this, "Verbunden mit " + mac_adress,
                     Toast.LENGTH_LONG).show();
 

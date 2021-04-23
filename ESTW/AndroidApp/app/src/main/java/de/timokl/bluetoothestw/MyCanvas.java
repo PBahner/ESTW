@@ -21,43 +21,43 @@ public class MyCanvas extends View {
     private static final int black = Color.BLACK;
 
     Paint paint;
-    Paint.FontMetrics fm;
-    int m;
-    Double ergebnis;
+    Paint.FontMetrics fontMetrics;
+    int multiplier;
+    Double result;
     int xM;
-    int gleisBreite = 4;
+    int trackWidth = 4;
     boolean updateOn = true;
     private static TouchListener pTouchListener;
     String LOG_TAG = "Canvas";
 
-    boolean [] Belegtmeldung = {true, true, true, true, true, true};
-    boolean [] Weichen = {false, false, false, false};
-    int [] Signale = {0, 0, 0, 0, 0};
-    boolean [] SigAuswahl = {false, false, false, false, false, false};
+    boolean [] isTrackOccupied = {true, true, true, true, true, true};
+    boolean [] currentSwitchStates = {false, false, false, false};
+    int [] signalStates = {0, 0, 0, 0, 0};
+    boolean [] selectedSignals = {false, false, false, false, false, false};
     int [][] SigRects;
-    int [] einzustellendeFahrstrassen = {0, 0, 0, 0, 0, 0, 0, 0, 0};  // 1=wird eingestellt, 2=festgelegt, 3=in verwendung
-    char [][] fahrstrassen =   {{'a', 'c'}, {'b', 'c'},              // Ausfahrten aus Bahnhof
-                                {'c', 'd'},                          // Signal C (Berg)
-                                {'d', 'n'}, {'d', 'e'}, {'d', 'a'},  // Signal D
-                                {'e', 'n'}, {'e', 'e'}, {'e', 'a'}}; // Signal E (Innenkreis)
+    int [] statusOfRoutes = {0, 0, 0, 0, 0, 0, 0, 0, 0};  // 1=wird eingestellt, 2=festgelegt, 3=in verwendung
+    char [][] routes =   {{'a', 'c'}, {'b', 'c'},              // Ausfahrten aus Bahnhof
+                          {'c', 'd'},                          // Signal C (Berg)
+                          {'d', 'n'}, {'d', 'e'}, {'d', 'a'},  // Signal D
+                          {'e', 'n'}, {'e', 'e'}, {'e', 'a'}}; // Signal E (Innenkreis)
 
     // 2=gerade, 1=abzweigend, 0=nicht gebraucht
     //                                    Signale    Weichen  Belegtmeldung/Gleis
-    int [][] fahrstrassenVerschluss =  {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
-                                        {0,1,0,0,0,  1,0,0,0,  0,0,1,0,0,0}, // BC
-                                        {0,0,1,0,0,  0,0,2,0,  0,0,0,1,0,0}, // CD
-                                        {0,0,0,1,0,  0,0,2,2,  0,0,0,0,1,0}, // DN
-                                        {0,0,0,1,0,  0,1,2,1,  0,0,0,0,1,1}, // DE
-                                        {0,0,0,1,0,  2,2,2,1,  1,0,0,0,1,0}, // DA
-                                        {0,0,0,0,1,  0,0,1,2,  0,0,0,0,1,0}, // EN
-                                        {0,0,0,0,1,  0,1,1,1,  0,0,0,0,1,1}, // EE
-                                        {0,0,0,0,1,  2,2,1,1,  1,0,0,0,1,0}};// EA
+    int [][] routesLockTable =  {{1,0,0,0,0,  2,0,0,0,  0,0,1,0,0,0}, // AC
+                                 {0,1,0,0,0,  1,0,0,0,  0,0,1,0,0,0}, // BC
+                                 {0,0,1,0,0,  0,0,2,0,  0,0,0,1,0,0}, // CD
+                                 {0,0,0,1,0,  0,0,2,2,  0,0,0,0,1,0}, // DN
+                                 {0,0,0,1,0,  0,1,2,1,  0,0,0,0,1,1}, // DE
+                                 {0,0,0,1,0,  2,2,2,1,  1,0,0,0,1,0}, // DA
+                                 {0,0,0,0,1,  0,0,1,2,  0,0,0,0,1,0}, // EN
+                                 {0,0,0,0,1,  0,1,1,1,  0,0,0,0,1,1}, // EE
+                                 {0,0,0,0,1,  2,2,1,1,  1,0,0,0,1,0}};// EA
 
     private void init() {
         paint = new Paint();
-        fm = new Paint.FontMetrics();
+        fontMetrics = new Paint.FontMetrics();
         paint.setColor(red);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         //paint.setAntiAlias(true);
     }
 
@@ -85,39 +85,69 @@ public class MyCanvas extends View {
         if ((action & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
             final float x = event.getX();
             final float y = event.getY();
-            int xClick = Math.round(event.getX());
-            int yClick = Math.round(event.getY());
 
-            xClick = (xClick - xM) / m;
-            yClick /= m;
+            int xClick = convertXToGrid(x);
+            int yClick = convertYToGrid(y);
 
-            if (70 <= xClick && xClick <= 80 && 72 <= yClick && yClick <= 78) {
-                onTouchDown(x, y, "a");
-            } else if (70 <= xClick && xClick <= 80 && 82 <= yClick && yClick <= 88) {
-                onTouchDown(x, y, "b");
-            } else if (90 <= xClick && xClick <= 100 && 12 <= yClick && yClick <= 18) {
-                onTouchDown(x, y, "c");
-            } else if (50 <= xClick && xClick <= 60 && 12 <= yClick && yClick <= 18) {
-                onTouchDown(x, y, "d");
-            } else if (47 <= xClick && xClick <= 53 && 26 <= yClick && yClick <= 36) {
-                onTouchDown(x, y, "e");
-            } else if (1 <= xClick && xClick <= 9 && 12 <= yClick && yClick <= 18) {
-                onTouchDown(x, y, "n");
-            } else if (80 <= xClick && xClick <= 90 && 70 <= yClick && yClick <= 80) {
-                onTouchDown(x, y, 0);
-            } else if (40 <= xClick && xClick <= 50 && 60 <= yClick && yClick <= 70) {
-                onTouchDown(x, y, 1);
-            } else if (40 <= xClick && xClick <= 50 && 20 <= yClick && yClick <= 30) {
-                onTouchDown(x, y, 2);
-            } else if (10 <= xClick && xClick <= 20 && 20 <= yClick && yClick <= 30) {
-                onTouchDown(x, y, 3);
+            char signal = checkPressedOnSignal(xClick, yClick);
+            if (signal != '-') {
+                onTouchDown(x, y, signal);
             } else {
-                resetSignals();
+                int weiche = checkPressedOnSwitch(xClick, yClick);
+                if (weiche != -1) {
+                    onTouchDown(x, y, weiche);
+                } else {
+                    resetSignals();
+                }
             }
         }
 
         this.performClick ();
         return true;
+    }
+
+    private int convertXToGrid(float x) {
+        x = Math.round(x);
+        x = (x- xM) / multiplier;
+        return (int) x;
+    }
+
+    private int convertYToGrid(float y) {
+        y = Math.round(y);
+        y /= multiplier;
+        return (int) y;
+    }
+
+    private char checkPressedOnSignal (int clickedX, int clickedY) {
+        if (70 <= clickedX && clickedX <= 80 && 72 <= clickedY && clickedY <= 78) {
+            return 'a';
+        } else if (70 <= clickedX && clickedX <= 80 && 82 <= clickedY && clickedY <= 88) {
+            return 'b';
+        } else if (90 <= clickedX && clickedX <= 100 && 12 <= clickedY && clickedY <= 18) {
+            return 'c';
+        } else if (50 <= clickedX && clickedX <= 60 && 12 <= clickedY && clickedY <= 18) {
+            return 'd';
+        } else if (47 <= clickedX && clickedX <= 53 && 26 <= clickedY && clickedY <= 36) {
+            return 'e';
+        } else if (1 <= clickedX && clickedX <= 9 && 12 <= clickedY && clickedY <= 18) {
+            return 'n';
+        } else {
+            return '-';
+        }
+    }
+
+    private int checkPressedOnSwitch (int clickedX, int clickedY) {
+        if (80 <= clickedX && clickedX <= 90 && 70 <= clickedY && clickedY <= 80) {
+            return 0;
+        } else if (40 <= clickedX && clickedX <= 50 && 60 <= clickedY && clickedY <= 70) {
+            return 1;
+        } else if (40 <= clickedX && clickedX <= 50 && 20 <= clickedY && clickedY <= 30) {
+            return 2;
+        } else if (10 <= clickedX && clickedX <= 20 && 20 <= clickedY && clickedY <= 30) {
+            return 3;
+        } else {
+            return -1;
+        }
     }
 
     /*--------------------------------------------------------------------------------*/
@@ -126,7 +156,7 @@ public class MyCanvas extends View {
         if (pTouchListener == null) return;
         pTouchListener.onTouchDown ((int) downX, (int) downY, weiche);
     }
-    static void onTouchDown(float downX, float downY, String signal) {
+    static void onTouchDown(float downX, float downY, char signal) {
         if (pTouchListener == null) return;
         pTouchListener.onTouchDown ((int) downX, (int) downY, signal);
     }
@@ -156,9 +186,9 @@ public class MyCanvas extends View {
     @Override
     public void onDraw(Canvas canvas) {
         canvas.drawColor(black);
-        Log.d(LOG_TAG, "Belegtmeldung "+ Arrays.toString(Belegtmeldung));
-        m = getHeight() / 90;
-        xM = (getWidth() - m * 110) / 2;
+        Log.d(LOG_TAG, "Belegtmeldung "+ Arrays.toString(isTrackOccupied));
+        multiplier = getHeight() / 90;
+        xM = (getWidth() - multiplier * 110) / 2;
 
 
 //////////////////////////////////////////////////////////////////      Signal Rahmen      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +197,7 @@ public class MyCanvas extends View {
         paint.setStrokeWidth(1);
         paint.setStyle(Paint.Style.STROKE);
         for (int i = 0; i<6; i++){
-            if (SigAuswahl[i]){
+            if (selectedSignals[i]){
                 SigRects = new int[][]{
                         {pos("x", 70), pos("y", 69), pos("x", 78), pos("y", 78)},
                         {pos("x", 70), pos("y", 79), pos("x", 78), pos("y", 88)},
@@ -189,22 +219,22 @@ public class MyCanvas extends View {
         paint.setColor(yellow);
 
         paint.setStrokeWidth(3);
-        TrColor(0, 2);
+        seperatorColor(0, 2);
         canvas.drawLine(pos("x", 80), pos("y", 70), pos("x", 80), pos("y", 69), paint); //Gl 1-3
 
 
 
-        TrColor(1, 2);
+        seperatorColor(1, 2);
         canvas.drawLine(pos("x", 80), pos("y", 80), pos("x", 80), pos("y", 79), paint); //Gl 2-3
 
 
 
-        TrColor(2, 3);
+        seperatorColor(2, 3);
         canvas.drawLine(pos("x", 90), pos("y", 20), pos("x", 90), pos("y", 19), paint); //Gl 3-4
 
 
 
-        if(Belegtmeldung[4]/* && Belegtmeldung[nP]*/){
+        if(isTrackOccupied[4]/* && Belegtmeldung[nP]*/){
             paint.setColor(red);
         } else {
             paint.setColor(yellow);
@@ -213,38 +243,38 @@ public class MyCanvas extends View {
 
 
 
-       TrColor(3, 4);
+       seperatorColor(3, 4);
         canvas.drawLine(pos("x", 50), pos("y", 20), pos("x", 50), pos("y", 19), paint); //Gl 4-5
 
 
 
-        TrColor(4, 5);
+        seperatorColor(4, 5);
         canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 46), pos("y", 64), paint); //Gl 5-6 unten
-        TrColor(5, 4);
+        seperatorColor(5, 4);
         canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 46), pos("y", 26), paint); //Gl 5-6 oben
 
 
 
-        TrColor(4, 0);
+        seperatorColor(4, 0);
         canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 50), pos("y", 69), paint); //Gl 5-2
 
 
 //////////////////////////////////////////////////////////////////      Gleise      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
 
 
         //Gleis "1"
-        GlColor(0);
+        trackColor(0);
         canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 80), pos("y", 70), paint);
 
         //Gleis "2"
-        GlColor(1);
+        trackColor(1);
         canvas.drawLine(pos("x", 0), pos("y", 80), pos("x", 80), pos("y", 80), paint);
 
 
         //Gleis "101"
-        GlColor(2);
+        trackColor(2);
 
         canvas.drawLine(pos("x", 90), pos("y", 70), pos("x", 100), pos("y", 70), paint);
         canvas.drawLine(pos("x", 100), pos("y", 70), pos("x", 105), pos("y", 60), paint);
@@ -254,12 +284,12 @@ public class MyCanvas extends View {
 
 
         //Gleis "201"
-        GlColor(3);
+        trackColor(3);
         canvas.drawLine(pos("x", 90), pos("y", 20), pos("x", 50), pos("y", 20), paint);
 
 
         //Gleis "102"
-        GlColor(4);
+        trackColor(4);
 
         canvas.drawLine(pos("x", 40), pos("y", 20), pos("x", 20), pos("y", 20), paint);
 
@@ -276,7 +306,7 @@ public class MyCanvas extends View {
 
 
         //Gleis "103"
-        GlColor(5);
+        trackColor(5);
         canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 45), pos("y", 26), paint);
 
 
@@ -284,35 +314,35 @@ public class MyCanvas extends View {
 
 
         //Weiche "1"
-        if (Weichen[0]){
+        if (currentSwitchStates[0]){
             //abzweigend
-            SwitchColor(1, 1);
+            switchColor(1, 1);
             canvas.drawLine(pos("x", 80), pos("y", 70), pos("x", 83), pos("y", 70), paint);
-            SwitchColor(1, 2);
+            switchColor(1, 2);
             canvas.drawLine(pos("x", 80), pos("y", 80), pos("x", 83), pos("y", 80), paint);
             canvas.drawLine(pos("x", 83), pos("y", 80), pos("x", 88), pos("y", 70), paint);
         } else {
             //gerade
-            SwitchColor(1, 1);
+            switchColor(1, 1);
             canvas.drawLine(pos("x", 80), pos("y", 70), pos("x", 86), pos("y", 70), paint);
-            SwitchColor(1, 2);
+            switchColor(1, 2);
             canvas.drawLine(pos("x", 80), pos("y", 80), pos("x", 83), pos("y", 80), paint);
             canvas.drawLine(pos("x", 83), pos("y", 80), pos("x", 88), pos("y", 70), paint);
         }
 
         //Spitze
-        SwitchColor(1, 0);
+        switchColor(1, 0);
         canvas.drawLine(pos("x", 87), pos("y", 70), pos("x", 89), pos("y", 70), paint);
 
 
         paint.setColor(black);
-        if (Weichen[0]){
-            paint.setStrokeWidth(gleisBreite);
-            canvas.drawLine(pos("x", 85), pos("y", 70) + gleisBreite, pos("x", 89), pos("y", 70) + gleisBreite, paint);
+        if (currentSwitchStates[0]){
+            paint.setStrokeWidth(trackWidth);
+            canvas.drawLine(pos("x", 85), pos("y", 70) + trackWidth, pos("x", 89), pos("y", 70) + trackWidth, paint);
         } else {
-            paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 85), pos("y", 70) + (float)(3*m/2 + gleisBreite/2), pos("x", 89), pos("y", 70) + (float)(3*m/2 + gleisBreite/2), paint);
-            paint.setStrokeWidth(gleisBreite);
+            paint.setStrokeWidth(3 * multiplier);
+            canvas.drawLine(pos("x", 85), pos("y", 70) + (float)(3* multiplier /2 + trackWidth /2), pos("x", 89), pos("y", 70) + (float)(3* multiplier /2 + trackWidth /2), paint);
+            paint.setStrokeWidth(trackWidth);
         }
 
 
@@ -320,33 +350,33 @@ public class MyCanvas extends View {
 
 
         //Weiche "2"
-        if (Weichen[1]){
+        if (currentSwitchStates[1]){
             //abzweigend
-            SwitchColor(2, 1);
+            switchColor(2, 1);
             canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 47), pos("y", 70), paint);
-            SwitchColor(2, 2);
+            switchColor(2, 2);
             canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 42), pos("y", 70), paint);
         } else {
             //gerade
-            SwitchColor(2, 1);
+            switchColor(2, 1);
             canvas.drawLine(pos("x", 50), pos("y", 70), pos("x", 44), pos("y", 70), paint);
-            SwitchColor(2, 2);
+            switchColor(2, 2);
             canvas.drawLine(pos("x", 45), pos("y", 64), pos("x", 42), pos("y", 70), paint);
         }
 
         //Spitze
-        SwitchColor(2, 0);
+        switchColor(2, 0);
         canvas.drawLine(pos("x", 41), pos("y", 70), pos("x", 43), pos("y", 70), paint);
 
 
         paint.setColor(black);
-        if (Weichen[1]){
-            paint.setStrokeWidth(gleisBreite);
-            canvas.drawLine(pos("x", 41), pos("y", 70) - gleisBreite, pos("x", 45), pos("y", 70) - gleisBreite, paint);
+        if (currentSwitchStates[1]){
+            paint.setStrokeWidth(trackWidth);
+            canvas.drawLine(pos("x", 41), pos("y", 70) - trackWidth, pos("x", 45), pos("y", 70) - trackWidth, paint);
         } else {
-            paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 41), pos("y", 70) - (float)(3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 70) - (float)(3*m/2 + gleisBreite/2), paint);
-            paint.setStrokeWidth(gleisBreite);
+            paint.setStrokeWidth(3 * multiplier);
+            canvas.drawLine(pos("x", 41), pos("y", 70) - (float)(3* multiplier /2 + trackWidth /2), pos("x", 45), pos("y", 70) - (float)(3* multiplier /2 + trackWidth /2), paint);
+            paint.setStrokeWidth(trackWidth);
         }
 
 
@@ -354,33 +384,33 @@ public class MyCanvas extends View {
 
 
         //Weiche "3"
-        if (Weichen[2]){
+        if (currentSwitchStates[2]){
             //abzweigend
-            SwitchColor(3, 1);
+            switchColor(3, 1);
             canvas.drawLine(pos("x", 50), pos("y", 20), pos("x", 47), pos("y", 20), paint);
-            SwitchColor(3, 2);
+            switchColor(3, 2);
             canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 42), pos("y", 20), paint);
         } else {
             //gerade
-            SwitchColor(3, 1);
+            switchColor(3, 1);
             canvas.drawLine(pos("x", 50), pos("y", 20), pos("x", 44), pos("y", 20), paint);
-            SwitchColor(3, 2);
+            switchColor(3, 2);
             canvas.drawLine(pos("x", 45), pos("y", 26), pos("x", 42), pos("y", 20), paint);
         }
 
         //Spitze
-        SwitchColor(3, 0);
+        switchColor(3, 0);
         canvas.drawLine(pos("x", 41), pos("y", 20), pos("x", 43), pos("y", 20), paint);
 
 
         paint.setColor(black);
-        if (Weichen[2]){
-            paint.setStrokeWidth(gleisBreite);
-            canvas.drawLine(pos("x", 41), pos("y", 20) + gleisBreite, pos("x", 45), pos("y", 20) + gleisBreite, paint);
+        if (currentSwitchStates[2]){
+            paint.setStrokeWidth(trackWidth);
+            canvas.drawLine(pos("x", 41), pos("y", 20) + trackWidth, pos("x", 45), pos("y", 20) + trackWidth, paint);
         } else {
-            paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 41), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), pos("x", 45), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), paint);
-            paint.setStrokeWidth(gleisBreite);
+            paint.setStrokeWidth(3 * multiplier);
+            canvas.drawLine(pos("x", 41), pos("y", 20) + (float)(3* multiplier /2 + trackWidth /2), pos("x", 45), pos("y", 20) + (float)(3* multiplier /2 + trackWidth /2), paint);
+            paint.setStrokeWidth(trackWidth);
         }
 
 
@@ -388,33 +418,33 @@ public class MyCanvas extends View {
 
 
         //Weiche "4"
-        if (Weichen[3]){
+        if (currentSwitchStates[3]){
             //abzweigend
-            SwitchColor(4, 1);
+            switchColor(4, 1);
             canvas.drawLine(pos("x", 10), pos("y", 20), pos("x", 13), pos("y", 20), paint);
-            SwitchColor(4, 2);
+            switchColor(4, 2);
             canvas.drawLine(pos("x", 15), pos("y", 26), pos("x", 18), pos("y", 20), paint);
         } else {
             //gerade
-            SwitchColor(4, 1);
+            switchColor(4, 1);
             canvas.drawLine(pos("x", 10), pos("y", 20), pos("x", 16), pos("y", 20), paint);
-            SwitchColor(4, 2);
+            switchColor(4, 2);
             canvas.drawLine(pos("x", 15), pos("y", 26), pos("x", 18), pos("y", 20), paint);
         }
 
         //Spitze
-        SwitchColor(4, 0);
+        switchColor(4, 0);
         canvas.drawLine(pos("x", 17), pos("y", 20), pos("x", 19), pos("y", 20), paint);
 
 
         paint.setColor(black);
-        if (Weichen[3]){
-            paint.setStrokeWidth(gleisBreite);
-            canvas.drawLine(pos("x", 15), pos("y", 20) + gleisBreite, pos("x", 19), pos("y", 20) + gleisBreite, paint);
+        if (currentSwitchStates[3]){
+            paint.setStrokeWidth(trackWidth);
+            canvas.drawLine(pos("x", 15), pos("y", 20) + trackWidth, pos("x", 19), pos("y", 20) + trackWidth, paint);
         } else {
-            paint.setStrokeWidth(3 * m);
-            canvas.drawLine(pos("x", 15), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), pos("x", 19), pos("y", 20) + (float)(3*m/2 + gleisBreite/2), paint);
-            paint.setStrokeWidth(gleisBreite);
+            paint.setStrokeWidth(3 * multiplier);
+            canvas.drawLine(pos("x", 15), pos("y", 20) + (float)(3* multiplier /2 + trackWidth /2), pos("x", 19), pos("y", 20) + (float)(3* multiplier /2 + trackWidth /2), paint);
+            paint.setStrokeWidth(trackWidth);
         }
 
 
@@ -425,59 +455,59 @@ public class MyCanvas extends View {
         paint.setStrokeWidth(1);
         for(int i=0; i<9; i++){
             // W1
-            if(fahrstrassenVerschluss[i][5] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][5] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 80), pos("y", 82), pos("x", 84), pos("y", 82), paint);
                 canvas.drawLine(pos("x", 80), pos("y", 78), pos("x", 82), pos("y", 78), paint);
                 canvas.drawLine(pos("x", 89), pos("y", 72), pos("x", 90), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 87), pos("y", 68), pos("x", 90), pos("y", 68), paint);
                 canvas.drawLine(pos("x", 84), pos("y", 82), pos("x", 89), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 82), pos("y", 78), pos("x", 87), pos("y", 68), paint);
-            }else if(fahrstrassenVerschluss[i][5] == 2 && einzustellendeFahrstrassen[i] == 1){
+            }else if(routesLockTable[i][5] == 2 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 80), pos("y", 72), pos("x", 90), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 80), pos("y", 68), pos("x", 90), pos("y", 68), paint);
             }
             // W2
-            if(fahrstrassenVerschluss[i][6] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][6] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 40), pos("y", 72), pos("x", 43), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 40), pos("y", 68), pos("x", 41), pos("y", 68), paint);
                 canvas.drawLine(pos("x", 43), pos("y", 72), pos("x", 47), pos("y", 64), paint);
                 canvas.drawLine(pos("x", 41), pos("y", 68), pos("x", 43), pos("y", 64), paint);
-            }else if(fahrstrassenVerschluss[i][6] == 2 && einzustellendeFahrstrassen[i] == 1){
+            }else if(routesLockTable[i][6] == 2 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 40), pos("y", 72), pos("x", 50), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 40), pos("y", 68), pos("x", 50), pos("y", 68), paint);
             }
             // W3
-            if(fahrstrassenVerschluss[i][7] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][7] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 40), pos("y", 22), pos("x", 41), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 40), pos("y", 18), pos("x", 43), pos("y", 18), paint);
                 canvas.drawLine(pos("x", 41), pos("y", 22), pos("x", 43), pos("y", 26), paint);
                 canvas.drawLine(pos("x", 43), pos("y", 18), pos("x", 47), pos("y", 26), paint);
-            }else if(fahrstrassenVerschluss[i][7] == 2 && einzustellendeFahrstrassen[i] == 1){
+            }else if(routesLockTable[i][7] == 2 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 40), pos("y", 22), pos("x", 50), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 40), pos("y", 18), pos("x", 50), pos("y", 18), paint);
             }
             // W4
-            if(fahrstrassenVerschluss[i][8] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][8] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 20), pos("y", 22), pos("x", 19), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 20), pos("y", 18), pos("x", 17), pos("y", 18), paint);
                 canvas.drawLine(pos("x", 19), pos("y", 22), pos("x", 17), pos("y", 26), paint);
                 canvas.drawLine(pos("x", 17), pos("y", 18), pos("x", 13), pos("y", 26), paint);
-            }else if(fahrstrassenVerschluss[i][8] == 2 && einzustellendeFahrstrassen[i] == 1){
+            }else if(routesLockTable[i][8] == 2 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 0), pos("y", 22), pos("x", 20), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 0), pos("y", 18), pos("x", 20), pos("y", 18), paint);
             }
             // A
-            if(fahrstrassenVerschluss[i][9] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][9] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 50), pos("y", 72), pos("x", 80), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 50), pos("y", 68), pos("x", 80), pos("y", 68), paint);
             }
             // B
-            if(fahrstrassenVerschluss[i][10] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][10] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 0), pos("y", 82), pos("x", 80), pos("y", 82), paint);
                 canvas.drawLine(pos("x", 0), pos("y", 78), pos("x", 80), pos("y", 78), paint);
             }
             // C
-            if(fahrstrassenVerschluss[i][11] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][11] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 90), pos("y", 72), pos("x", 101), pos("y", 72), paint);
                 canvas.drawLine(pos("x", 90), pos("y", 68), pos("x", 99), pos("y", 68), paint);
                 canvas.drawLine(pos("x", 101), pos("y", 72), pos("x", 107), pos("y", 60), paint);
@@ -490,12 +520,12 @@ public class MyCanvas extends View {
                 canvas.drawLine(pos("x", 101), pos("y", 18), pos("x", 90), pos("y", 18), paint);
             }
             // D
-            if(fahrstrassenVerschluss[i][12] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][12] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 90), pos("y", 22), pos("x", 50), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 90), pos("y", 18), pos("x", 50), pos("y", 18), paint);
             }
             // T
-            if(fahrstrassenVerschluss[i][13] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][13] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 40), pos("y", 22), pos("x", 20), pos("y", 22), paint);
                 canvas.drawLine(pos("x", 40), pos("y", 18), pos("x", 20), pos("y", 18), paint);
 
@@ -509,59 +539,59 @@ public class MyCanvas extends View {
                 }
             }
             // E
-            if(fahrstrassenVerschluss[i][14] == 1 && einzustellendeFahrstrassen[i] == 1){
+            if(routesLockTable[i][14] == 1 && statusOfRoutes[i] == 1){
                 canvas.drawLine(pos("x", 47), pos("y", 64), pos("x", 47), pos("y", 26), paint);
                 canvas.drawLine(pos("x", 43), pos("y", 64), pos("x", 43), pos("y", 26), paint);
             }
         }
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
 
 
 //////////////////////////////////////////////////////////////////      Signale      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
         //Signal "N1"
-        SigColor(0);
-        canvas.drawCircle(pos("x", 76), pos("y", 75), (float) 1.5 * m, paint);
+        signalColor(0);
+        canvas.drawCircle(pos("x", 76), pos("y", 75), (float) 1.5 * multiplier, paint);
         paint.setStrokeWidth(6);
         canvas.drawLine(pos("x", 76), pos("y", 75), pos("x", 71), pos("y", 75), paint);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         canvas.drawLine(pos("x", 71), pos("y", 76), pos("x", 71), pos("y", 74), paint);
 
 
         //Signal "N2"
-        SigColor(1);
-        canvas.drawCircle(pos("x", 76), pos("y", 85), (float) 1.5 * m, paint);
+        signalColor(1);
+        canvas.drawCircle(pos("x", 76), pos("y", 85), (float) 1.5 * multiplier, paint);
         paint.setStrokeWidth(6);
         canvas.drawLine(pos("x", 76), pos("y", 85), pos("x", 71), pos("y", 85), paint);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         canvas.drawLine(pos("x", 71), pos("y", 86), pos("x", 71), pos("y", 84), paint);
 
 
         //Signal "101"
-        SigColor(2);
-        canvas.drawCircle(pos("x", 94), pos("y", 15), (float) 1.5 * m, paint);
+        signalColor(2);
+        canvas.drawCircle(pos("x", 94), pos("y", 15), (float) 1.5 * multiplier, paint);
         paint.setStrokeWidth(6);
         canvas.drawLine(pos("x", 94), pos("y", 15), pos("x", 99), pos("y", 15), paint);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         canvas.drawLine(pos("x", 99), pos("y", 16), pos("x", 99), pos("y", 14), paint);
 
 
         //Signal "102"
-        SigColor(3);
-        canvas.drawCircle(pos("x", 54), pos("y", 15), (float) 1.5 * m, paint);
+        signalColor(3);
+        canvas.drawCircle(pos("x", 54), pos("y", 15), (float) 1.5 * multiplier, paint);
         paint.setStrokeWidth(6);
         canvas.drawLine(pos("x", 54), pos("y", 15), pos("x", 59), pos("y", 15), paint);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         canvas.drawLine(pos("x", 59), pos("y", 16), pos("x", 59), pos("y", 14), paint);
 
 
         //Signal "103"
-        SigColor(4);
-        canvas.drawCircle(pos("x", 50), pos("y", 30), (float) 1.5 * m, paint);
+        signalColor(4);
+        canvas.drawCircle(pos("x", 50), pos("y", 30), (float) 1.5 * multiplier, paint);
         paint.setStrokeWidth(6);
         canvas.drawLine(pos("x", 50), pos("y", 30), pos("x", 50), pos("y", 35), paint);
-        paint.setStrokeWidth(gleisBreite);
+        paint.setStrokeWidth(trackWidth);
         canvas.drawLine(pos("x", 51), pos("y", 35), pos("x", 49), pos("y", 35), paint);
 
 
@@ -580,14 +610,14 @@ public class MyCanvas extends View {
 
 
 
-        GleisText(canvas, "1", 65, 71);
-        GleisText(canvas,"2", 45, 81);
-        GleisText(canvas, "101", 103, 46);
-        GleisText(canvas, "201", 69, 21);
-        GleisText(canvas, "102", 13, 46);
-        GleisText(canvas, "103", 43, 46);
+        trackText(canvas, "1", 65, 71);
+        trackText(canvas,"2", 45, 81);
+        trackText(canvas, "101", 103, 46);
+        trackText(canvas, "201", 69, 21);
+        trackText(canvas, "102", 13, 46);
+        trackText(canvas, "103", 43, 46);
 
-        paint.setTextSize(m*3);
+        paint.setTextSize(multiplier *3);
         paint.setColor(yellow);
 
         canvas.drawText("1", pos("x", 90), pos("y", 67.5), paint);
@@ -613,23 +643,25 @@ public class MyCanvas extends View {
 
     }
 
-    public void TrColor(int gl1, int gl2){
+    public void seperatorColor(int track1, int track2){
         paint.setColor(yellow);
-        boolean abschnitt2FS = false;
+        boolean trainIsInImportantSection = false;
         for(int i=0; i<9; i++) {
-            if (fahrstrassenVerschluss[i][gl2 + 9] == 1 && einzustellendeFahrstrassen[i] == 3) {
-                abschnitt2FS = true; break;
+            //     Gleis muss im Plan frei sein     und   Zug schon im Abschnitt
+            if (routesLockTable[i][track2 + 9] == 1 && statusOfRoutes[i] == 3) {
+                trainIsInImportantSection = true;
+                break;
             }
         }
-        if(Belegtmeldung[gl1] && (gl1 != 4 || Belegtmeldung[gl2] || abschnitt2FS)){  // && Belegtmeldung[gl2]
+        if(isTrackOccupied[track1] && (track1 != 4 || isTrackOccupied[track2] || trainIsInImportantSection)){  // && isTrackOccupied[track2]
             paint.setColor(red);
         } else {
             for(int i=0; i<9; i++) {
-                if (fahrstrassenVerschluss[i][gl1 + 9] == 1 && gl1 != 4 &&
-                        (einzustellendeFahrstrassen[i] == 2 || (einzustellendeFahrstrassen[i] == 3 && !Belegtmeldung[gl1]))) {
+                if (routesLockTable[i][track1 + 9] == 1 && track1 != 4 &&
+                        (statusOfRoutes[i] == 2 || (statusOfRoutes[i] == 3 && !isTrackOccupied[track1]))) {
                     paint.setColor(green);
-                } else if (fahrstrassenVerschluss[i][gl1 + 9] == 1 && fahrstrassenVerschluss[i][gl2 + 9] == 1 && gl1 == 4 &&
-                        (einzustellendeFahrstrassen[i] == 2 || (einzustellendeFahrstrassen[i] == 3 && !Belegtmeldung[gl1] && !Belegtmeldung[gl2]))) {
+                } else if (routesLockTable[i][track1 + 9] == 1 && routesLockTable[i][track2 + 9] == 1 && track1 == 4 &&
+                        (statusOfRoutes[i] == 2 || (statusOfRoutes[i] == 3 && !isTrackOccupied[track1] && !isTrackOccupied[track2]))) {
                     paint.setColor(green);
                 }
             }
@@ -638,35 +670,35 @@ public class MyCanvas extends View {
 
     }
 
-    public void GlColor(int gl){
-        if (Belegtmeldung[gl]){
+    public void trackColor(int gl){
+        if (isTrackOccupied[gl]){
             paint.setColor(red);
         } else {
             paint.setColor(yellow);
         }
         for(int i=0; i<9; i++) {
-            if (fahrstrassenVerschluss[i][gl + 9] == 1 && (einzustellendeFahrstrassen[i] == 2 || (einzustellendeFahrstrassen[i] == 3 && !Belegtmeldung[gl]))) {
+            if (routesLockTable[i][gl + 9] == 1 && (statusOfRoutes[i] == 2 || (statusOfRoutes[i] == 3 && !isTrackOccupied[gl]))) {
                 paint.setColor(green);
-            } else if (fahrstrassenVerschluss[i][gl + 9] == 1 && einzustellendeFahrstrassen[i] == 3 && Belegtmeldung[gl]) {
+            } else if (routesLockTable[i][gl + 9] == 1 && statusOfRoutes[i] == 3 && isTrackOccupied[gl]) {
                 paint.setColor(red);
             }
         }
     }
 
-    public void SigColor(int sig){
-        if (Signale[sig] == 0){
+    public void signalColor(int sig){
+        if (signalStates[sig] == 0){
             paint.setColor(red);
-        } else if (Signale[sig] == 1) {
+        } else if (signalStates[sig] == 1) {
             paint.setColor(yellow);
-        } else if (Signale[sig] == 2) {
+        } else if (signalStates[sig] == 2) {
             paint.setColor(green);
         }
     }
 
-    public void SwitchColor(int sw, int p){
+    public void switchColor(int sw, int p){
         if (p == 0){   // Farbe für Weichenspitze
-            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
-                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && (fahrstrassenVerschluss[fahrstrasse][4+sw] == 1 || fahrstrassenVerschluss[fahrstrasse][4 + sw] == 2)) {
+            for (int route = 0; route< routesLockTable.length; route++) {
+                if ((statusOfRoutes[route] == 2 || statusOfRoutes[route] == 3) && (routesLockTable[route][4+sw] == 1 || routesLockTable[route][4 + sw] == 2)) {
                     paint.setColor(green);
                     break;
                 } else {
@@ -674,22 +706,22 @@ public class MyCanvas extends View {
                 }
             }
         } else if (p == 1){ // Farbe für Weiche gerade
-            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
-                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && fahrstrassenVerschluss[fahrstrasse][4+sw] == 2){
+            for (int route = 0; route < routesLockTable.length; route++) {
+                if ((statusOfRoutes[route] == 2 || statusOfRoutes[route] == 3) && routesLockTable[route][4+sw] == 2){
                     paint.setColor(green);
                     break;
-                } else if (!Weichen[sw-1]){
+                } else if (!currentSwitchStates[sw-1]){
                     paint.setColor(yellow);
                 } else {
                     paint.setColor(white);
                 }
             }
         } else if (p == 2){ // Farbe für Weiche abzweigend
-            for (int fahrstrasse=0; fahrstrasse<fahrstrassenVerschluss.length; fahrstrasse++) {
-                if ((einzustellendeFahrstrassen[fahrstrasse] == 2 || einzustellendeFahrstrassen[fahrstrasse] == 3) && fahrstrassenVerschluss[fahrstrasse][4+sw] == 1){
+            for (int route = 0; route< routesLockTable.length; route++) {
+                if ((statusOfRoutes[route] == 2 || statusOfRoutes[route] == 3) && routesLockTable[route][4+sw] == 1){
                     paint.setColor(green);
                     break;
-                } else if (Weichen[sw-1]){
+                } else if (currentSwitchStates[sw-1]){
                     paint.setColor(yellow);
                 } else {
                     paint.setColor(white);
@@ -698,29 +730,29 @@ public class MyCanvas extends View {
         }
     }
 
-    private void GleisText(Canvas canvas, String text, int x, int y) {
-        paint.setTextSize(m*3);
+    private void trackText(Canvas canvas, String text, int x, int y) {
+        paint.setTextSize(multiplier *3);
         paint.setColor(black);
-        paint.getFontMetrics(fm);
+        paint.getFontMetrics(fontMetrics);
         int margin = 5;
 
         canvas.drawRect(pos("x", x) - margin,
-                pos("y", y) + fm.top - margin,
+                pos("y", y) + fontMetrics.top - margin,
                 pos("x", x) + paint.measureText(text) + margin,
-                pos("y", y) + fm.bottom + margin, paint);
+                pos("y", y) + fontMetrics.bottom + margin, paint);
 
 
         paint.setColor(Color.WHITE);
         canvas.drawText(text, pos("x", x), pos("y", y), paint);
     }
 
-    public int pos(String Achse, double posWert) {
-        ergebnis = 0.0;
-        if (Achse.equals("x")) {
-            ergebnis = posWert * m + xM;
-        } else if (Achse.equals("y")) {
-            ergebnis = posWert * m;
+    public int pos(String axis, double valueOfPosition) {
+        result = 0.0;
+        if (axis.equals("x")) {
+            result = valueOfPosition * multiplier + xM;
+        } else if (axis.equals("y")) {
+            result = valueOfPosition * multiplier;
         }
-        return (int)Math.round(ergebnis);
+        return (int)Math.round(result);
     }
 }
