@@ -5,6 +5,7 @@
 #include <WProgramm.h>
 #else*/
 #include <Arduino.h>
+#include <PCF8574.h>
 #include "KsSignal.h"
 
 // Konstanten
@@ -58,6 +59,7 @@ class ESTW{
     boolean isTrainArrived(int);
     void cancelRoute(int);
     void outputShiftRegister();
+    void outputPCF8574();
     void inputShiftRegister();
 
     //  0 = nicht einstellen, 1 = Fahrweg sichern, 2 = Signal schalten,
@@ -66,6 +68,10 @@ class ESTW{
 
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);
+
+    // define pcfs and adjust addresses
+    PCF8574 PCFOutputBoard1 = PCF8574(0x20);  // 32
+    PCF8574 PCFOutputBoard2 = PCF8574(0x21);  // 33
 
     i2c_struct i2c_data;
     

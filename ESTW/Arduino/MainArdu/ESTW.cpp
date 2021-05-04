@@ -200,6 +200,10 @@ void ESTW::outputShiftRegister(){
   shiftOut(datenOut, taktOut, MSBFIRST, dataOut1);
   digitalWrite(speicherOut, HIGH);
 }
+void ESTW::outputPCF8574(){
+  PCFOutputBoard1.write8(~dataOut1);
+  PCFOutputBoard2.write8(~dataOut2);
+}
 
 void ESTW::inputShiftRegister(){
   // Daten vom Schieberegister-IN einlesen
