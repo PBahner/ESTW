@@ -98,7 +98,8 @@ void loop() {
     previousMillis2 = millis();
     //Daten Auslesen und Ausgeben
     Estw.inputShiftRegister();
-    Estw.outputShiftRegister();
+    // Estw.outputShiftRegister();
+    Estw.outputPCF8574();
   
     Estw.uartSendSwitchStates();
     Estw.uartSendRouteStates();

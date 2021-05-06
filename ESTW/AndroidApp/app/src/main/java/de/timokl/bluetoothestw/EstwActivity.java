@@ -129,7 +129,7 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         int sig_id = 0;
 
         Log.d(LOG_TAG, "onTouchDown Signal");
-        Toast.makeText(getApplicationContext(), signal, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), signal, Toast.LENGTH_SHORT).show();
 
         switch (signal){
             case 'a': sig_id = 0;
