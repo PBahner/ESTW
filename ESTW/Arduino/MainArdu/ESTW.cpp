@@ -7,18 +7,18 @@ void ESTW::setSwitch(int weiche, int pos){
 }
 
 void ESTW::setAllSwitches(){
-  for(int weiche=0; weiche<4; weiche++){
-    if(lockedSwitches[weiche] == 0){  // ist Weiche nicht gesperrt kann sie gestellt werden
-      if(currentSwitchState[weiche] != targetSwitchState[weiche]){  // Weichen Rückmeldung entsprich nicht dem Soll-data
+  for(int Switch=0; Switch<4; Switch++){
+    if(lockedSwitches[Switch] == 0){  // ist Weiche nicht gesperrt kann sie gestellt werden
+      if(currentSwitchState[Switch] != targetSwitchState[Switch]){  // Weichen Rückmeldung entsprich nicht dem Soll-data
         /*Serial.print("Setze Weiche ");
-        Serial.print(weiche);
+        Serial.print(Switch);
         Serial.print(" auf ");
-        Serial.println(targetSwitchState[weiche]);
-        //currentSwitchState[weiche] = targetSwitchState[weiche];*/    //  position in currentSwitchState array eintragen
+        Serial.println(targetSwitchState[Switch]);
+        //currentSwitchState[Switch] = targetSwitchState[Switch];*/    //  position in currentSwitchState array eintragen
         
-        bitWrite(dataOut1, ((weiche+1)*2)-targetSwitchState[weiche]-1, 1);  //Weichen Relais anziehen
+        bitWrite(dataOut1, ((Switch+1)*2)-targetSwitchState[Switch]-1, 1);  //Weichen Relais anziehen
       }else{
-        bitWrite(dataOut1, ((weiche+1)*2)-targetSwitchState[weiche]-1, 0);  //Weichen Relais abfallen
+        bitWrite(dataOut1, ((Switch+1)*2)-targetSwitchState[Switch]-1, 0);  //Weichen Relais abfallen
       }
     }
   }
@@ -58,123 +58,123 @@ int ESTW::isRouteAvailable(char buffer[20]){
   }
 }
 
-boolean ESTW::isRouteClear(int fahrstrasse){
+boolean ESTW::isRouteClear(int route){
   for(int i=9; i<15; i++){
     //      wird dieses Gleis gebraucht            und       ist es Frei?
-    if(routesLockTable[fahrstrasse][i] == 1 and isTrackOccupied[i-9] == 1){
+    if(routesLockTable[route][i] == 1 and isTrackOccupied[i-9] == 1){
       return false; // Falls es nicht Frei ist -> return false
     }
   }
   return true;
 }
 
-void ESTW::secureRoute(int fahrstrasse){
+void ESTW::secureRoute(int route){
   boolean richtigeWPos = false;
   while(!richtigeWPos){  // Solange nicht alle Weichen richtig stehen: Weichen schalten
   for(int i=5; i<9; i++){  // 5,6,7,8 (alle Weichen durchgehen)
-    switch(routesLockTable[fahrstrasse][i]){  // Weichen schalten
+    switch(routesLockTable[route][i]){  // Weichen schalten
       case 1: setSwitch(i-5, 1); break;  // abzweigend
       case 2: setSwitch(i-5, 0); break;  // gerade
     }
     setAllSwitches();
     // prüfen ob alle Weichenpositionen richtig sind
     // Weichenposition = Weichenposition aus Verschlussplan      oder Weichenposition ist egal
-    if(currentSwitchState[0] == routesLockTable[fahrstrasse][i]-1 or routesLockTable[fahrstrasse][i] == 0 and
-       currentSwitchState[1] == routesLockTable[fahrstrasse][i]-1 or routesLockTable[fahrstrasse][i] == 0 and
-       currentSwitchState[2] == routesLockTable[fahrstrasse][i]-1 or routesLockTable[fahrstrasse][i] == 0 and
-       currentSwitchState[3] == routesLockTable[fahrstrasse][i]-1 or routesLockTable[fahrstrasse][i] == 0){
+    if(currentSwitchState[0] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       currentSwitchState[1] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       currentSwitchState[2] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       currentSwitchState[3] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0){
       richtigeWPos = true;
     }
   }
   }
   for(int i=0; i<4; i++){
     // richtige Weichen sperren
-    if(currentSwitchState[i] == routesLockTable[fahrstrasse][i+5]-1 and routesLockTable[fahrstrasse][i+5] != 0){
+    if(currentSwitchState[i] == routesLockTable[route][i+5]-1 and routesLockTable[route][i+5] != 0){
       lockedSwitches[i] = true;
       Serial.println("weiche gesperrt");
     }
   }
 }
 
-void ESTW::setSignal(int fahrstrasse, boolean pos){
+void ESTW::setSignal(int route, boolean pos){
   for(int i=0; i<5; i++){
 
     //  Signal einschalten
-    if((routesLockTable[fahrstrasse][i] == 1) and (pos == 1)){
-      turnOnSignalOfRoute(fahrstrasse);
+    if((routesLockTable[route][i] == 1) and (pos == 1)){
+      turnOnSignalOfRoute(route);
 
     //  Signal ausschalten
-    }else if((routesLockTable[fahrstrasse][i] == 1) and (pos == 0)){
-      turnOffSignalOfRoute(fahrstrasse);
+    }else if((routesLockTable[route][i] == 1) and (pos == 0)){
+      turnOffSignalOfRoute(route);
     }
   }
 }
 
-void ESTW::turnOnSignalOfRoute(int fahrstrasse){
+void ESTW::turnOnSignalOfRoute(int route){
   //  Fahrstraße AC
-  if(fahrstrasse == 0){
+  if(route == 0){
     i2c_data.valueSignal1 = 1;  // Formsignal
   //  Fahrstraße BC
-  }else if(fahrstrasse == 1){
+  }else if(route == 1){
     i2c_data.valueSignal2 = 1;  // Formsignal
   //  Fahrstraße DN
-  }else if(fahrstrasse == 3){
+  }else if(route == 3){
     KS1.setSignalPattern(2);
   //  Fahrstraße DE      DA, und AC nicht auf "fahrt"
-  }else if(fahrstrasse == 4 or (fahrstrasse == 5 and statusOfRoutes[0] != 4)){
+  }else if(route == 4 or (route == 5 and statusOfRoutes[0] != 4)){
     KS1.setSignalPattern(7);
   //  Fahrstraße DA, und AC auf "fahrt"       AC, und DA auf "fahrt"
-  }else if((fahrstrasse == 5 and statusOfRoutes[0] == 4) or (statusOfRoutes[5] == 4 and fahrstrasse == 0)){
+  }else if((route == 5 and statusOfRoutes[0] == 4) or (statusOfRoutes[5] == 4 and route == 0)){
     KS1.setSignalPattern(5);
   //  Fahrstraße EN
-  }else if(fahrstrasse == 6){
+  }else if(route == 6){
     KS2.setSignalPattern(2);
   //  Fahrstraße EE        EA, und AC nicht auf "fahrt"
-  }else if(fahrstrasse == 7 or (fahrstrasse == 8 and statusOfRoutes[0] != 4)){
+  }else if(route == 7 or (route == 8 and statusOfRoutes[0] != 4)){
     KS2.setSignalPattern(7);
   //  Fahrstraße EA, und AC auf "fahrt"       AC, und EA auf "fahrt"
-  }else if((fahrstrasse == 8 and statusOfRoutes[0] == 4) or (statusOfRoutes[8] == 4 and fahrstrasse == 0)){
+  }else if((route == 8 and statusOfRoutes[0] == 4) or (statusOfRoutes[8] == 4 and route == 0)){
     KS2.setSignalPattern(5);
   }
 }
 
-void ESTW::turnOffSignalOfRoute(int fahrstrasse){
-  if(routesLockTable[fahrstrasse][0] == 1){
+void ESTW::turnOffSignalOfRoute(int route){
+  if(routesLockTable[route][0] == 1){
     i2c_data.valueSignal1 = 0;
   }
-  if(routesLockTable[fahrstrasse][1] == 1){
+  if(routesLockTable[route][1] == 1){
     i2c_data.valueSignal2 = 0;
   }
-  if(routesLockTable[fahrstrasse][3] == 1){
+  if(routesLockTable[route][3] == 1){
     KS1.setSignalPattern(1);
   }
-  if(routesLockTable[fahrstrasse][4] == 1){
+  if(routesLockTable[route][4] == 1){
     KS2.setSignalPattern(1);
   }
 }
 
-void ESTW::setPowerOfTrack(int fahrstrasse, boolean pos){
+void ESTW::setPowerOfTrack(int route, boolean pos){
   for(int i=0; i<5; i++){
-    if((routesLockTable[fahrstrasse][i] == 1) and (pos == 1)){
+    if((routesLockTable[route][i] == 1) and (pos == 1)){
       bitWrite(dataOut2, i, 1); // evtl. 0 ?
-    }else if((routesLockTable[fahrstrasse][i] == 1) and (pos == 0)){
+    }else if((routesLockTable[route][i] == 1) and (pos == 0)){
       bitWrite(dataOut2, i, 0);
     }
   }
 }
 
-boolean ESTW::isTrainArrived(int fahrstrasse) {
+boolean ESTW::isTrainArrived(int route) {
   byte count = 0;
   byte sum = 0;
   for(int b=0; b<6; b++) {  // alle Gleise durchgehen
     //  alle gebrauchten Fahrstraßen sind Frei
-    if(routesLockTable[fahrstrasse][b+9] == 1) {
+    if(routesLockTable[route][b+9] == 1) {
       sum++;
     }
-    if(routesLockTable[fahrstrasse][b+9] == 1 and isTrackOccupied[b] == 0) {
+    if(routesLockTable[route][b+9] == 1 and isTrackOccupied[b] == 0) {
       count++;
     //  gebrauchte Fahrstraße ist belegt und Zielgleis
-    }else if(routesLockTable[fahrstrasse][b+9] == 1 and isTrackOccupied[b] == 1 and b+1 == destinationTrack[fahrstrasse]) {
+    }else if(routesLockTable[route][b+9] == 1 and isTrackOccupied[b] == 1 and b+1 == destinationTrack[route]) {
       count++;
     }
   }
@@ -184,10 +184,10 @@ boolean ESTW::isTrainArrived(int fahrstrasse) {
   return false;
 }
 
-void ESTW::cancelRoute(int fahrstrasse) {  
+void ESTW::cancelRoute(int route) {  
   for(int i=5; i<9; i++){
     //  Weiche wurde benutzt
-    if(routesLockTable[fahrstrasse][i] != 0) {
+    if(routesLockTable[route][i] != 0) {
       lockedSwitches[i-5] = 0;
     }
   }

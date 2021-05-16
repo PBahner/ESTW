@@ -15,6 +15,6 @@ class KsSignal{
     byte pin2;
     byte pin3;
     byte pin4;
-    void pinModus(boolean, boolean, boolean, boolean);
+    void setPinMode(boolean, boolean, boolean, boolean);
 };
 #endif
