@@ -5,7 +5,7 @@
 
 #define DLC_MSG_STELLPULT 5
 #define PIN 2
-#define LENGTH 30
+#define LENGTH 32
 
 struct can_frame canMsg;
 MCP2515 mcp2515(10);
@@ -78,10 +78,12 @@ Neopixel Ra4(neopixels,    23, 3, l0_7, l3_7);
 Neopixel Ra5(neopixels,    26, 3, l0_3, l3_6);
 
 //Gleisstücken dazwischen
-Neopixel GlObenMitte(neopixels,  18, 0, l4_0);
+Neopixel GlObenMitte1(neopixels,   18, 0, l4_0);
 Neopixel GlObenMitte2(neopixels,  20, 0, l4_0);
+Neopixel GlObenRechts1(neopixels, 30, 0, l4_2);
 Neopixel GlUntenMitte(neopixels,  19, 0, l4_1);
-Neopixel GlUntenLinks1(neopixels,  29, 0, l4_3);// TESTEN !!!
+Neopixel GlUntenLinks1(neopixels, 29, 0, l4_3);
+Neopixel GlUntenLinks2(neopixels, 31, 0, l4_3);
 
 
 // GLEISE (Felder mit Beschriftung)
@@ -173,10 +175,12 @@ void receiveEventCAN() {
   AbstellV.updateleds(receive_data);
   AbstellH.updateleds(receive_data);
 
-  GlObenMitte.updateleds(receive_data);
+  GlObenMitte1.updateleds(receive_data);
   GlObenMitte2.updateleds(receive_data);
+  GlObenRechts1.updateleds(receive_data);
   GlUntenMitte.updateleds(receive_data);
   GlUntenLinks1.updateleds(receive_data);
+  GlUntenLinks2.updateleds(receive_data);
   
   SigA.updateleds(receive_data);
   SigB.updateleds(receive_data);
