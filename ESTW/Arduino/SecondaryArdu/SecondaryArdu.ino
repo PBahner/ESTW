@@ -14,14 +14,14 @@ union i2c_data{
 i2c_data data;
 unsigned long millis_before = 0;
 
-FormSignal FSignal1;
-FormSignal FSignal2;
+FormSignal fSignal1;
+FormSignal fSignal2;
 
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
   Serial.begin(9600);
-  FSignal1.begin(2);
-  FSignal2.begin(3);
+  fSignal1.begin(2);
+  fSignal2.begin(3);
   Wire.begin(SLAVE_ADR);
 }
 
@@ -43,15 +43,15 @@ void getData(){
   }
 
   if(data.valueSignal1 == -1 or data.valueSignal1 == -1){
-    FSignal1.setSignal(0);
+    fSignal1.setSignal(0);
     delay(10);
-    FSignal2.setSignal(0);
+    fSignal2.setSignal(0);
     Serial.println("nichts empfangen");
   }else{
-    FSignal1.setSignal(data.valueSignal1);
+    fSignal1.setSignal(data.valueSignal1);
     Serial.println("-------------------");
     delay(10);
-    FSignal2.setSignal(data.valueSignal2);
+    fSignal2.setSignal(data.valueSignal2);
     Serial.println("Signale Schalten");
   }
   Serial.println(data.valueSignal1);

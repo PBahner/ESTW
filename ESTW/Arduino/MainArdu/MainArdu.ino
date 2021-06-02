@@ -1,7 +1,10 @@
 #include "ESTW.h"
 #include "KsSignal.h"
+#include <PCF8574.h>
 #include <Wire.h>
+
 ESTW Estw;
+
 
 // Variablen
 char buffer[20]; // Daten Array fuer die einkommenden Seriellen Daten
@@ -13,24 +16,33 @@ unsigned long delayUntilSignalTurnsRed[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 ////////////////////////////////////SETUP////////////////////////////////////
 void setup() {
+  // Serielle Schnittstelle initialisieren
+  Serial.begin(9600);
+
+  // I2C
+  Wire.begin(2); // I2C Adresse 2
+  Wire.onRequest(i2cRequestEvent);
+  
   //Pins für Schieberegister-IN
   pinMode(pLoadIn, OUTPUT);
   pinMode(taktIn, OUTPUT);
   pinMode(datenIn, INPUT);
 
   //Pins für Schieberegister-OUT
-  pinMode(taktOut, OUTPUT);
-  pinMode(speicherOut, OUTPUT);
-  pinMode(datenOut, OUTPUT);
+  // pinMode(taktOut, OUTPUT);
+  // pinMode(speicherOut, OUTPUT);
+  // pinMode(datenOut, OUTPUT);
+  
+  // initialize PCF8574
+  if (!Estw.PCFOutputBoard1.begin()){
+    Serial.println("could not initialize board-1...");
+  }
+  if (!Estw.PCFOutputBoard2.begin()){
+    Serial.println("could not initialize board-2...");
+  }
 
   //Daten ausgeben
-  Estw.outputShiftRegister();
-
-  // I2C
-  Wire.begin(2); // I2C Adresse 2
-  Wire.onRequest(i2cRequestEvent);
-
-  Serial.begin(9600); // Serielle Schnittstelle initialisieren
+  // Estw.outputShiftRegister();
 }
 
 ////////////////////////////////////LOOP////////////////////////////////////
@@ -86,7 +98,8 @@ void loop() {
     previousMillis2 = millis();
     //Daten Auslesen und Ausgeben
     Estw.inputShiftRegister();
-    Estw.outputShiftRegister();
+    // Estw.outputShiftRegister();
+    Estw.outputPCF8574();
   
     Estw.uartSendSwitchStates();
     Estw.uartSendRouteStates();
