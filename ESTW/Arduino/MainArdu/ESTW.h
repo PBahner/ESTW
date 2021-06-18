@@ -23,21 +23,24 @@
 //#define AufloesenTag 67 // C (für clear)
 //#define BefahrenTag 85 // U
 
-
 #define datenIn 11
 #define taktIn 12
 #define pLoadIn 13
 
-#define taktOut 8
-#define speicherOut 9
-#define datenOut 10
-
+#define SLAVE_ADR 3
 
 // I2C Daten
-union i2c_struct{
+union i2c_for_slave{
   struct{
     byte valueSignal1 = 0;
     byte valueSignal2 = 0;
+  };
+  byte bytes[2];
+};
+union i2c_from_slave{
+  struct{
+    byte input1 = 0;
+    byte input2 = 0;
   };
   byte bytes[2];
 };
@@ -73,7 +76,8 @@ class ESTW{
     PCF8574 PCFOutputBoard1 = PCF8574(0x20);  // 32
     PCF8574 PCFOutputBoard2 = PCF8574(0x21);  // 33
 
-    i2c_struct i2c_data;
+    i2c_for_slave i2c_data;
+    i2c_from_slave dataFromSlave;
     
   private:
     boolean controlMode = false; // Gleisunterbrechungen nach Signalen Schalten

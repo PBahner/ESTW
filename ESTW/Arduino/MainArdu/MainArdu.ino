@@ -5,7 +5,6 @@
 
 ESTW Estw;
 
-
 // Variablen
 char buffer[20]; // Daten Array fuer die einkommenden Seriellen Daten
 int bufferCount;
@@ -27,11 +26,6 @@ void setup() {
   pinMode(pLoadIn, OUTPUT);
   pinMode(taktIn, OUTPUT);
   pinMode(datenIn, INPUT);
-
-  //Pins für Schieberegister-OUT
-  // pinMode(taktOut, OUTPUT);
-  // pinMode(speicherOut, OUTPUT);
-  // pinMode(datenOut, OUTPUT);
   
   // initialize PCF8574
   if (!Estw.PCFOutputBoard1.begin()){

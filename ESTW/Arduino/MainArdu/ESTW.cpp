@@ -193,34 +193,23 @@ void ESTW::cancelRoute(int route) {
   }
 }
 
-void ESTW::outputShiftRegister(){
-  // Daten am Schieberegister-OUT ausgeben
-  digitalWrite(speicherOut, LOW);
-  shiftOut(datenOut, taktOut, MSBFIRST, dataOut2);
-  shiftOut(datenOut, taktOut, MSBFIRST, dataOut1);
-  digitalWrite(speicherOut, HIGH);
-}
 void ESTW::outputPCF8574(){
   PCFOutputBoard1.write8(~dataOut1);
   PCFOutputBoard2.write8(~dataOut2);
 }
 
 void ESTW::inputShiftRegister(){
-  // Daten vom Schieberegister-IN einlesen
-  digitalWrite(taktIn, HIGH);
-  delayMicroseconds(20);
-  digitalWrite(pLoadIn, LOW);
-  delayMicroseconds(20);
-  digitalWrite(pLoadIn, HIGH);
-  
-  int in1 = shiftIn(datenIn, taktIn, MSBFIRST); in1 =~ in1;
-  int in2 = shiftIn(datenIn, taktIn, MSBFIRST); in2 =~ in2;
+  Serial.println("getData");
+  Wire.requestFrom(SLAVE_ADR, sizeof(dataFromSlave));
+  for (unsigned int i = 0; i < sizeof(dataFromSlave); i++){
+    dataFromSlave.bytes[i] = Wire.read();
+  }
 
   //  Gleisbelegtmeldung an App senden
   Serial.print(char(StartTag)); Serial.print(char(BelegtmeldungsTag));
   for(int i=0; i<8; i++){
-    shiftIn1[i] = bitRead(in1, i); //Rückmeldungen in arrays eintragen
-    shiftIn2[i] = bitRead(in2, i);
+    shiftIn1[i] = bitRead(dataFromSlave.input1, i); //Rückmeldungen in arrays eintragen
+    shiftIn2[i] = bitRead(dataFromSlave.input2, i);
     Serial.print(shiftIn1[i]);
     if(i < 4){
       currentSwitchState[i] = shiftIn2[i];
