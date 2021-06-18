@@ -22,11 +22,6 @@ void setup() {
   Wire.begin(2); // I2C Adresse 2
   Wire.onRequest(i2cRequestEvent);
   
-  //Pins für Schieberegister-IN
-  pinMode(pLoadIn, OUTPUT);
-  pinMode(taktIn, OUTPUT);
-  pinMode(datenIn, INPUT);
-  
   // initialize PCF8574
   if (!Estw.PCFOutputBoard1.begin()){
     Serial.println("could not initialize board-1...");
