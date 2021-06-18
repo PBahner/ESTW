@@ -11,7 +11,7 @@ union i2c_data{
   byte bytes[2];
 };
 
-i2c_data data;
+i2c_data requestedData;
 unsigned long millis_before = 0;
 
 FormSignal fSignal1;
@@ -34,27 +34,23 @@ void loop() {
 }
 
 void getData(){
+  // Daten vom Master-Arduino Abfragen
   Serial.println("getData");
-  Wire.requestFrom(MASTER_ADR, sizeof(data));
-  Serial.println("getData");
-  for (unsigned int i = 0; i < sizeof(data); i++){
-    data.bytes[i] = Wire.read();
-    Serial.println(data.bytes[i]);
+  Wire.requestFrom(MASTER_ADR, sizeof(requestedData));
+  for (unsigned int i = 0; i < sizeof(requestedData); i++){
+    requestedData.bytes[i] = Wire.read();
+    // empfangene Daten direkt ausgeben
+    Serial.println(requestedData.bytes[i]);
   }
-
-  if(data.valueSignal1 == -1 or data.valueSignal1 == -1){
-    fSignal1.setSignal(0);
-    delay(10);
-    fSignal2.setSignal(0);
-    Serial.println("nichts empfangen");
-  }else{
-    fSignal1.setSignal(data.valueSignal1);
-    Serial.println("-------------------");
-    delay(10);
-    fSignal2.setSignal(data.valueSignal2);
-    Serial.println("Signale Schalten");
+  // Signal 1 stellen
+  switch(requestedData.valueSignal1){
+    case 1: fSignal1.setSignal(1); break;
+    default: fSignal1.setSignal(0); break;
   }
-  Serial.println(data.valueSignal1);
-  Serial.println(data.valueSignal2);
-  //delay(1000);
+  // Signal 2 stellen
+  switch(requestedData.valueSignal2){
+    case 1: fSignal2.setSignal(1); break;
+    default: fSignal2.setSignal(0); break;
+  }
+  Serial.println("-------------------");
 }
