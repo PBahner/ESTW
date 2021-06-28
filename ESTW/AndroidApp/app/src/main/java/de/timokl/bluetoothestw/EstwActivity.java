@@ -312,7 +312,12 @@ public class EstwActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(LOG_TAG, "Belegtmeldung empfangen");
         for (int i=1; i < 7; i++) {
             //  48 -> Frei  49 -> Belegt
-            canvas.isTrackOccupied[i - 1] = buffer[bPos + i] != 48;
+            switch (buffer[bPos + i]){
+                case 48: canvas.isTrackOccupied[i - 1] = false;
+                    break;  //  Gleis frei
+                case 49: canvas.isTrackOccupied[i - 1] = true;
+                    break;  // Gleis besetzt
+            }
         }
     }
 
