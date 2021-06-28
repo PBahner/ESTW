@@ -2,9 +2,11 @@
 
 ESTW::ESTW(){/*initialisieren*/}
 
+
 void ESTW::setSwitch(int weiche, int pos){
   targetSwitchState[weiche] = pos;
 }
+
 
 void ESTW::setAllSwitches(){
   for(int Switch=0; Switch<4; Switch++){
@@ -24,6 +26,7 @@ void ESTW::setAllSwitches(){
   }
 }
 
+
 void ESTW::uartSendSwitchStates(){
   //Weichenposition an App senden
   Serial.print("SWP");
@@ -33,6 +36,7 @@ void ESTW::uartSendSwitchStates(){
   Serial.println("\n");
 }
 
+
 void ESTW::uartSendRouteStates(){
   Serial.print("SFP");
   for(int i=0; i<sizeof(statusOfRoutes); i++){
@@ -40,6 +44,7 @@ void ESTW::uartSendRouteStates(){
   }
   Serial.println("\n");
 }
+
 
 int ESTW::isRouteAvailable(char buffer[20]){
   char start = buffer[3];  // Start-Signal
@@ -58,6 +63,7 @@ int ESTW::isRouteAvailable(char buffer[20]){
   }
 }
 
+
 boolean ESTW::isRouteClear(int route){
   for(int i=9; i<15; i++){
     //      wird dieses Gleis gebraucht            und       ist es Frei?
@@ -67,6 +73,7 @@ boolean ESTW::isRouteClear(int route){
   }
   return true;
 }
+
 
 void ESTW::secureRoute(int route){
   boolean richtigeWPos = false;
@@ -96,6 +103,7 @@ void ESTW::secureRoute(int route){
   }
 }
 
+
 void ESTW::setSignal(int route, boolean pos){
   for(int i=0; i<5; i++){
 
@@ -109,6 +117,7 @@ void ESTW::setSignal(int route, boolean pos){
     }
   }
 }
+
 
 void ESTW::turnOnSignalOfRoute(int route){
   //  Fahrstraße AC
@@ -138,6 +147,7 @@ void ESTW::turnOnSignalOfRoute(int route){
   }
 }
 
+
 void ESTW::turnOffSignalOfRoute(int route){
   if(routesLockTable[route][0] == 1){
     i2c_data.valueSignal1 = 0;
@@ -153,6 +163,7 @@ void ESTW::turnOffSignalOfRoute(int route){
   }
 }
 
+
 void ESTW::setPowerOfTrack(int route, boolean pos){
   for(int i=0; i<5; i++){
     if((routesLockTable[route][i] == 1) and (pos == 1)){
@@ -162,6 +173,7 @@ void ESTW::setPowerOfTrack(int route, boolean pos){
     }
   }
 }
+
 
 boolean ESTW::isTrainArrived(int route) {
   byte count = 0;
@@ -184,6 +196,7 @@ boolean ESTW::isTrainArrived(int route) {
   return false;
 }
 
+
 void ESTW::cancelRoute(int route) {  
   for(int i=5; i<9; i++){
     //  Weiche wurde benutzt
@@ -193,17 +206,25 @@ void ESTW::cancelRoute(int route) {
   }
 }
 
+
 void ESTW::outputPCF8574(){
   PCFOutputBoard1.write8(~dataOut1);
   PCFOutputBoard2.write8(~dataOut2);
 }
 
+
 void ESTW::inputShiftRegister(){
-  Serial.println("getData");
-  Wire.requestFrom(SLAVE_ADR, sizeof(dataFromSlave));
-  for (unsigned int i = 0; i < sizeof(dataFromSlave); i++){
-    dataFromSlave.bytes[i] = Wire.read();
-  }
+  // Serial.println("getData");
+  // Daten vom Slave-Arduino abfragen
+  byte checksumInput[2];
+  do{
+    Wire.requestFrom(SLAVE_ADR, sizeof(dataFromSlave));
+    for (unsigned int i = 0; i < sizeof(dataFromSlave); i++){
+      dataFromSlave.bytes[i] = Wire.read();
+    }
+    checksumInput[0] = dataFromSlave.input1;
+    checksumInput[1] = dataFromSlave.input2;
+  } while (dataFromSlave.checksum != calculateChecksum(checksumInput));
 
   //  Gleisbelegtmeldung an App senden
   Serial.print(char(StartTag)); Serial.print(char(BelegtmeldungsTag));
@@ -230,4 +251,17 @@ void ESTW::inputShiftRegister(){
     Serial.print(shiftIn2[i]);
   }
   Serial.println();*/
+}
+
+
+// calculate fletchers checksum
+byte ESTW::calculateChecksum(byte inputData[]) {
+  byte sum1 = 0;
+  byte sum2 = 0;
+  for (int i=0; i<sizeof(inputData); i++) {
+    sum1 = (sum1 + inputData[i]) % 255;
+    sum2 = (sum2 + sum1) % 255;
+  }
+  byte checksum = (sum1 + sum2) % 255;
+  return checksum;
 }

@@ -41,8 +41,9 @@ union i2c_from_slave{
   struct{
     byte input1 = 0;
     byte input2 = 0;
+    byte checksum = 0;
   };
-  byte bytes[2];
+  byte bytes[3];
 };
 
 
@@ -68,6 +69,8 @@ class ESTW{
     //  0 = nicht einstellen, 1 = Fahrweg sichern, 2 = Signal schalten,
     //  3 = Gleis schalten, 4 = Signal/Gleis aus, 5 = FS auflösen
     byte statusOfRoutes[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    byte calculateChecksum(byte[2]);
 
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);

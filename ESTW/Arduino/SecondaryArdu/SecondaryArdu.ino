@@ -19,8 +19,9 @@ union i2c_for_master{
   struct{
     byte input1 = 0;
     byte input2 = 0;
+    byte checksum = 0;
   };
-  byte bytes[2];
+  byte bytes[3];
 };
 
 i2c_from_master dataFromMaster;
@@ -61,7 +62,7 @@ void loop() {
 
 
 void getData(){
-  // Daten vom Master-Arduino Abfragen
+  // Daten vom Master-Arduino abfragen
   Serial.println("getData");
   Wire.requestFrom(MASTER_ADR, sizeof(dataFromMaster));
   for (unsigned int i = 0; i < sizeof(dataFromMaster); i++){
@@ -97,7 +98,25 @@ void inputShiftRegister(){
   dataForMaster.input2 = in2;
 }
 
+
 void i2cRequestEvent(){
+  // calculate Checksum
+  byte checksumInput[2] = {dataForMaster.input1, dataForMaster.input2};
+  dataForMaster.checksum = calculateChecksum(checksumInput);
+  // write data including checksum to i2c
   Wire.write(dataForMaster.bytes, sizeof(dataForMaster));
   Serial.println("Request!!");
+}
+
+
+// calculate fletchers checksum
+byte calculateChecksum(byte inputData[]) {
+  byte sum1 = 0;
+  byte sum2 = 0;
+  for (int i=0; i<sizeof(inputData); i++) {
+    sum1 = (sum1 + inputData[i]) % 255;
+    sum2 = (sum2 + sum1) % 255;
+  }
+  byte checksum = (sum1 + sum2) % 255;
+  return checksum;
 }
