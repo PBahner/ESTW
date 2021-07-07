@@ -78,11 +78,6 @@ void loop() {
     }
   }
 
-  if(millis() - previousMillis1 >= 250){
-    previousMillis1 = millis();
-    Estw.setAllSwitches();
-  }
-
   if(millis() - previousMillis2 >= 100){
     previousMillis2 = millis();
     //Daten Auslesen und Ausgeben
@@ -115,7 +110,7 @@ void serialEvent() {
         case 48: pos = 0; break;
         case 49: pos = 1; break;
       }
-      Estw.setSwitch(weiche, pos);
+      Estw.switches[weiche].setTargetSwitchState(pos);
 
     } else if (buffer[1] == FahrstrassenTag and buffer[2] == AnfrageTag) { // Anfrage für Fahrstraße einstellen erkannt (FR.,.E)
       int numFahrstrasse;

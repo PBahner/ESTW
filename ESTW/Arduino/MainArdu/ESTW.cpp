@@ -3,35 +3,11 @@
 ESTW::ESTW(){/*initialisieren*/}
 
 
-void ESTW::setSwitch(int weiche, int pos){
-  targetSwitchState[weiche] = pos;
-}
-
-
-void ESTW::setAllSwitches(){
-  for(int Switch=0; Switch<4; Switch++){
-    if(lockedSwitches[Switch] == 0){  // ist Weiche nicht gesperrt kann sie gestellt werden
-      if(currentSwitchState[Switch] != targetSwitchState[Switch]){  // Weichen Rückmeldung entsprich nicht dem Soll-data
-        /*Serial.print("Setze Weiche ");
-        Serial.print(Switch);
-        Serial.print(" auf ");
-        Serial.println(targetSwitchState[Switch]);
-        //currentSwitchState[Switch] = targetSwitchState[Switch];*/    //  position in currentSwitchState array eintragen
-        
-        bitWrite(dataOut1, ((Switch+1)*2)-targetSwitchState[Switch]-1, 1);  //Weichen Relais anziehen
-      }else{
-        bitWrite(dataOut1, ((Switch+1)*2)-targetSwitchState[Switch]-1, 0);  //Weichen Relais abfallen
-      }
-    }
-  }
-}
-
-
 void ESTW::uartSendSwitchStates(){
   //Weichenposition an App senden
   Serial.print("SWP");
-  for(int i=0; i<sizeof(currentSwitchState); i++){
-    Serial.print(currentSwitchState[i]);
+  for(int i=0; i<sizeof(switches)/sizeof(switches[0]); i++){
+    Serial.print(switches[i].getCurrentPos());
   }
   Serial.println("\n");
 }
@@ -80,24 +56,23 @@ void ESTW::secureRoute(int route){
   while(!richtigeWPos){  // Solange nicht alle Weichen richtig stehen: Weichen schalten
   for(int i=5; i<9; i++){  // 5,6,7,8 (alle Weichen durchgehen)
     switch(routesLockTable[route][i]){  // Weichen schalten
-      case 1: setSwitch(i-5, 1); break;  // abzweigend
-      case 2: setSwitch(i-5, 0); break;  // gerade
+      case 1: switches[i-5].setTargetSwitchState(1); break;  // abzweigend
+      case 2: switches[i-5].setTargetSwitchState(0); break;  // gerade
     }
-    setAllSwitches();
     // prüfen ob alle Weichenpositionen richtig sind
     // Weichenposition = Weichenposition aus Verschlussplan      oder Weichenposition ist egal
-    if(currentSwitchState[0] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
-       currentSwitchState[1] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
-       currentSwitchState[2] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
-       currentSwitchState[3] == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0){
+    if(switches[0].getCurrentPos() == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       switches[1].getCurrentPos() == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       switches[2].getCurrentPos() == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
+       switches[3].getCurrentPos() == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0){
       richtigeWPos = true;
     }
   }
   }
   for(int i=0; i<4; i++){
     // richtige Weichen sperren
-    if(currentSwitchState[i] == routesLockTable[route][i+5]-1 and routesLockTable[route][i+5] != 0){
-      lockedSwitches[i] = true;
+    if(switches[i].getCurrentPos() == routesLockTable[route][i+5]-1 and routesLockTable[route][i+5] != 0){
+      switches[i].lock();
       Serial.println("weiche gesperrt");
     }
   }
@@ -201,7 +176,7 @@ void ESTW::cancelRoute(int route) {
   for(int i=5; i<9; i++){
     //  Weiche wurde benutzt
     if(routesLockTable[route][i] != 0) {
-      lockedSwitches[i-5] = 0;
+      switches[i-5].unlock();
     }
   }
 }
@@ -233,17 +208,17 @@ void ESTW::inputShiftRegister(){
     shiftIn2[i] = bitRead(dataFromSlave.input2, i);
     Serial.print(shiftIn1[i]);
     if(i < 4){
-      currentSwitchState[i] = shiftIn2[i];
+      switches[i].updateCurrentSwitchState(shiftIn2[i]);
     }
     if(i < 6){
       isTrackOccupied[i] = shiftIn1[i];
     }
     if(i == 0 and controlMode){ // Gleisunterbrechungen nach Signalen Schalten
-      bitWrite(dataOut2, 0, not currentSwitchState[i]);
-      bitWrite(dataOut2, 1, currentSwitchState[i]);
+      bitWrite(dataOut2, 0, not switches[i].getCurrentPos());
+      bitWrite(dataOut2, 1, switches[i].getCurrentPos());
     }else if(i == 2 and controlMode){
-      bitWrite(dataOut2, 3, not currentSwitchState[i]);
-      bitWrite(dataOut2, 4, currentSwitchState[i]);
+      bitWrite(dataOut2, 3, not switches[i].getCurrentPos());
+      bitWrite(dataOut2, 4, switches[i].getCurrentPos());
     }
   }
   Serial.println();

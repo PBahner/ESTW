@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include <PCF8574.h>
 #include "KsSignal.h"
+#include "Switch.h"
 
 // Konstanten
 #define StartTag 83 // S
@@ -51,8 +52,6 @@ class ESTW{
   public:
     ESTW ();
     
-    void setSwitch(int, int);
-    void setAllSwitches();
     void uartSendSwitchStates();
     void uartSendRouteStates();
     boolean isRouteClear(int);
@@ -62,7 +61,6 @@ class ESTW{
     void setPowerOfTrack(int, boolean);
     boolean isTrainArrived(int);
     void cancelRoute(int);
-    void outputShiftRegister();
     void outputPCF8574();
     void inputShiftRegister();
 
@@ -75,6 +73,11 @@ class ESTW{
     KsSignal KS1 = KsSignal(4, 5, 6, 7);
     KsSignal KS2 = KsSignal(14, 15, 16, 17);
 
+    Switch switches[4] = {Switch(0, &dataOut1),
+                          Switch(1, &dataOut1),
+                          Switch(2, &dataOut1),
+                          Switch(3, &dataOut1)};
+
     // define pcfs and adjust addresses
     PCF8574 PCFOutputBoard1 = PCF8574(0x20);  // 32
     PCF8574 PCFOutputBoard2 = PCF8574(0x21);  // 33
@@ -84,13 +87,10 @@ class ESTW{
     
   private:
     boolean controlMode = false; // Gleisunterbrechungen nach Signalen Schalten
-    boolean targetSwitchState[4] = {0, 0, 0, 0}; // gewünschte Weichenposition
-    boolean currentSwitchState[4] = {0, 0, 0, 0}; // Weichenposition
-    boolean lockedSwitches[4] = {0, 0, 0, 0}; // sind Weichen gesperrt 0=frei 1=gesperrt
     boolean isTrackOccupied[6] = {1, 1, 1, 1, 1, 1};
     boolean shiftIn1[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // Schieberegister-In
     boolean shiftIn2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    byte dataOut1 = 0b00000000; // Schieberegister-Out
+    byte dataOut1 = 0b00000000; // PCF-Out
     byte dataOut2 = 0b00000000;
 
     const byte destinationTrack[9] = {3, 3, 4, 0, 6, 1, 0, 6, 1};

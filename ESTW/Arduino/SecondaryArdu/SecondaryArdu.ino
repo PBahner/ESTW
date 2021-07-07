@@ -40,6 +40,7 @@ void setup() {
   pinMode(pLoadIn, OUTPUT);
   pinMode(taktIn, OUTPUT);
   pinMode(datenIn, INPUT);
+  inputShiftRegister();
 
   // Formsignale starten
   fSignal1.begin(2);
