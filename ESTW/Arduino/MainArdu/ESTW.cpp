@@ -59,6 +59,8 @@ void ESTW::secureRoute(int route){
       case 1: switches[i-5].setTargetSwitchState(1); break;  // abzweigend
       case 2: switches[i-5].setTargetSwitchState(0); break;  // gerade
     }
+    outputPCF8574();
+    inputShiftRegister();
     // prüfen ob alle Weichenpositionen richtig sind
     // Weichenposition = Weichenposition aus Verschlussplan      oder Weichenposition ist egal
     if(switches[0].getCurrentPos() == routesLockTable[route][i]-1 or routesLockTable[route][i] == 0 and
@@ -199,6 +201,8 @@ void ESTW::inputShiftRegister(){
     }
     checksumInput[0] = dataFromSlave.input1;
     checksumInput[1] = dataFromSlave.input2;
+    Serial.println("check-1: " + String(dataFromSlave.checksum));
+    Serial.println("check-2: " + String(calculateChecksum(checksumInput)));
   } while (dataFromSlave.checksum != calculateChecksum(checksumInput));
 
   //  Gleisbelegtmeldung an App senden

@@ -106,6 +106,7 @@ void i2cRequestEvent(){
   dataForMaster.checksum = calculateChecksum(checksumInput);
   // write data including checksum to i2c
   Wire.write(dataForMaster.bytes, sizeof(dataForMaster));
+  Serial.println(String(dataForMaster.checksum));
   Serial.println("Request!!");
 }
 

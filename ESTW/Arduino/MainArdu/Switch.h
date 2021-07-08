@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #ifndef Switch_h
 #define Switch_h
 
